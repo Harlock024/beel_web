@@ -1,0 +1,22 @@
+---
+import "../styles/global.css";
+import { Toaster } from "react-hot-toast";
+---
+
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width" />
+        <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+        <title>Beel Project</title>
+    </head>
+    <body class="m-0 min-h-screen">
+        <main
+            class="flex flex-col justify-center items-center w-screen h-screen"
+        >
+            <slot />
+        </main>
+    </body>
+    <Toaster client:load />
+</html>
