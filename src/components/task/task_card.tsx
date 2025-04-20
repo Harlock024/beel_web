@@ -45,7 +45,7 @@ export function TaskCard({ task }: { task: Task }) {
               doneTask ? "line-through text-gray-400" : "text-gray-900"
             }`}
           >
-            {task?.title}
+            {task.title}
           </Label>
 
           <div className="flex items-center gap-6 text-sm text-gray-500">

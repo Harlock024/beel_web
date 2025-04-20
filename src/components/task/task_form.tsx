@@ -7,14 +7,13 @@ import { useListStore } from "@/stores/list_store";
 import { FilterType } from "@/stores/useFilterStore";
 
 export function TaskForm() {
-  const { addTask, tasks } = useTaskStore();
+  const { addTask } = useTaskStore();
   const { selectedListId } = useListStore();
   const [taskName, setTaskName] = useState("");
 
-  function handleAddTask(e: FormEvent) {
+  async function handleAddTask(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
-
-    if (taskName && selectedListId !== null) {
+    if (taskName !== null) {
       const newTask: Task = {
         title: taskName,
         list_id: selectedListId,
@@ -24,7 +23,6 @@ export function TaskForm() {
       setTaskName("");
     }
   }
-
   return (
     <div className="w-full">
       <form onSubmit={handleAddTask} className="flex flex-col gap-4 ">
@@ -39,7 +37,7 @@ export function TaskForm() {
             onChange={(e) => setTaskName(e.target.value)}
           />
         </div>
-        <button className="hidden" type="submit">
+        <button className="" type="submit">
           Add Task
         </button>
       </form>

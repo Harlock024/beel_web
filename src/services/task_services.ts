@@ -1,36 +1,78 @@
 import { API_URL } from "./api_url";
-import { Task } from "../types/task";
+import { Task, TaskResponse } from "../types/task";
 
-export async function FetchTasks(): Promise<Task[]> {
-  return fetch(API_URL + "/tasks", {
-    headers: {
-      Authorization: "Bearer " + localStorage.getItem("access_token"),
-    },
-  })
-    .then((response) => response.json())
-    .then((data) => data);
+import { useAuthStore } from "@/stores/useAuthStore";
+export async function FetchTasks(): Promise<TaskResponse> {
+  const accessToken = useAuthStore.getState().accessToken;
+
+  if (!accessToken) {
+    throw new Error("No access token found");
+  }
+
+  try {
+    const response = await fetch(API_URL + "/api/tasks", {
+      headers: {
+        "Content-Type": "application/json",
+
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data: TaskResponse = await response.json();
+    return data;
+  } catch (error) {
+    throw error;
+  }
 }
 
-export async function CreateTask(task: Task): Promise<Task> {
-  return fetch(API_URL + "/tasks", {
-    method: "POST",
+export async function CreateTask({
+  title,
+  listid,
+}: {
+  title: string;
+  listid?: string;
+}): Promise<Task> {
+  const accessToken = useAuthStore.getState().accessToken;
 
-    headers: {
-      Authorization: "Bearer " + localStorage.getItem("access_token"),
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(task),
-  })
-    .then((response) => response.json())
-    .then((data) => data);
+  if (!accessToken) {
+    throw new Error("No access token found");
+  }
+
+  try {
+    const response = await fetch(API_URL + "/api/tasks", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        title,
+        listid,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data.task;
+  } catch (error) {
+    throw error;
+  }
 }
-
 export async function UpdateTask(task: Task): Promise<Task> {
-  return fetch(API_URL + "/tasks/" + task.id, {
+  const accessToken = useAuthStore.getState().accessToken;
+
+  return fetch(API_URL + "/api/tasks/" + task.id, {
     method: "PUT",
     headers: {
-      Authorization: "Bearer " + localStorage.getItem("access_token"),
       "Content-Type": "application/json",
+      Authorization: `Bearer ${accessToken}`,
     },
     body: JSON.stringify(task),
   })
@@ -39,11 +81,14 @@ export async function UpdateTask(task: Task): Promise<Task> {
 }
 
 export async function DeleteTask(taskId: string): Promise<boolean> {
-  return fetch(API_URL + "/tasks/" + taskId, {
-    headers: {
-      Authorization: "Bearer " + localStorage.getItem("access_token"),
-    },
+  const accessToken = useAuthStore.getState().accessToken;
+
+  return fetch(API_URL + "/api/tasks/" + taskId, {
     method: "DELETE",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${accessToken}`,
+    },
   })
     .then((response) => response.json())
     .then((data) => data);
