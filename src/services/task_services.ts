@@ -65,19 +65,29 @@ export async function CreateTask({
     throw error;
   }
 }
+
 export async function UpdateTask(task: Task): Promise<Task> {
   const accessToken = useAuthStore.getState().accessToken;
 
-  return fetch(API_URL + "/api/tasks/" + task.id, {
-    method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${accessToken}`,
-    },
-    body: JSON.stringify(task),
-  })
-    .then((response) => response.json())
-    .then((data) => data);
+  try {
+    const response = await fetch(API_URL + "/api/tasks/" + task.id, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${accessToken}`,
+      },
+      body: JSON.stringify(task),
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data.task;
+  } catch (error) {
+    throw error;
+  }
 }
 
 export async function DeleteTask(taskId: string): Promise<boolean> {

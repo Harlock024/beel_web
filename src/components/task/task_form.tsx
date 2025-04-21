@@ -5,13 +5,14 @@ import { useTaskStore } from "@/stores/task_store";
 import { Plus } from "lucide-react";
 import { useListStore } from "@/stores/list_store";
 import { FilterType } from "@/stores/useFilterStore";
+import toast from "react-hot-toast";
 
 export function TaskForm() {
   const { addTask } = useTaskStore();
   const { selectedListId } = useListStore();
   const [taskName, setTaskName] = useState("");
 
-  async function handleAddTask(e: FormEvent<HTMLFormElement>) {
+  function handleAddTask(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (taskName !== null) {
       const newTask: Task = {
@@ -21,7 +22,9 @@ export function TaskForm() {
       };
       addTask(newTask);
       setTaskName("");
+      toast.success("Task added successfully!");
     }
+    toast.error("Task name cannot be empty!");
   }
   return (
     <div className="w-full">
@@ -32,6 +35,7 @@ export function TaskForm() {
             className="border-none w-full ring-0 focus:ring-0 focus:outline-none"
             type="text"
             id="name"
+            required
             placeholder="Add New Task"
             value={taskName}
             onChange={(e) => setTaskName(e.target.value)}

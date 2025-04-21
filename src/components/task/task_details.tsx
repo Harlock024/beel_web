@@ -23,6 +23,7 @@ export function TaskDetails({ className }: TaskDetailsProps) {
   const { lists, countedTask } = useListStore();
   const [currentTask, setCurrentTask] = useState<Task | undefined>(task);
   const [isSaving, setIsSaving] = useState(false);
+  console.log("currentTask", currentTask);
 
   useEffect(() => {
     setCurrentTask(task);
@@ -36,7 +37,6 @@ export function TaskDetails({ className }: TaskDetailsProps) {
   const handleEditTask = async (e: FormEvent) => {
     e.preventDefault();
     if (!currentTask) return;
-
     setIsSaving(true);
 
     const updatedTask: Task = {
@@ -44,9 +44,9 @@ export function TaskDetails({ className }: TaskDetailsProps) {
       title: currentTask.title.trim(),
       description: currentTask.description?.trim() || undefined,
       due_date: currentTask.due_date || undefined,
-      list_id: currentTask.list_id!,
+      list_id: currentTask.list_id,
     };
-    updateTask(task?.id!, updatedTask);
+    updateTask(updatedTask);
     countedTask(currentTask.list_id!);
 
     setIsSaving(false);
@@ -171,9 +171,10 @@ export function TaskDetails({ className }: TaskDetailsProps) {
             onChange={handleListChange}
             className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
           >
+            <option value="">None</option>
             {lists.map((list) => (
               <option key={list.id} value={list.id}>
-                {list.name}
+                {list.title}
               </option>
             ))}
           </select>

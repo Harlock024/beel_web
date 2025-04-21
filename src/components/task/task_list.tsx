@@ -8,12 +8,6 @@ export function TaskList() {
   const { filteredTasks } = useFiltersStore();
   console.log("all tasks", tasks);
 
-  console.log("filtered task", filteredTasks);
-
-  useEffect(() => {
-    getTasks();
-  }, []);
-
   const showTasks = filteredTasks.length > 0 ? filteredTasks : tasks;
 
   console.log("show tasks", showTasks);

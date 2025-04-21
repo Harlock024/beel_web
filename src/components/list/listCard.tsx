@@ -23,7 +23,7 @@ export function ListCard({ list, isSelected, onClick }: ListCardProps) {
           style={{ backgroundColor: list.color || "#FF475A" }}
           aria-hidden="true"
         ></div>
-        <Label className="font-semibold truncate">{list.name}</Label>
+        <Label className="font-semibold truncate">{list.title}</Label>
       </div>
       {/* <div
         className="flex bg-gray-200 size-6 rounded-sm justify-center items-center text-sm font-medium"

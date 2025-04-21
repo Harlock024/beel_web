@@ -7,16 +7,20 @@ import {
 import { HexColorPicker } from "react-colorful";
 import { Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useListStore } from "@/stores/list_store";
 
 export function ListForm({ onComplete }: { onComplete?: () => void }) {
   const nameRef = useRef<HTMLInputElement>(null);
   const [color, setColor] = useState("#aabbcc");
+  const { createList } = useListStore();
 
   function handleCreateList(e: FormEvent) {
     e.preventDefault();
+
     if (onComplete) {
       onComplete();
     }
+    createList(nameRef.current?.value || "", color);
   }
 
   return (

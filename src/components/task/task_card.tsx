@@ -14,6 +14,7 @@ export function TaskCard({ task }: { task: Task }) {
   const { tasks, setTask } = useTaskStore();
 
   const list = lists.find((list) => list.id === task.list_id);
+  console.log("list", list);
 
   function handleDoneTask(e: React.FormEvent) {
     e.preventDefault();
@@ -68,7 +69,7 @@ export function TaskCard({ task }: { task: Task }) {
                 variant="secondary"
                 className="bg-red-100 text-red-600 hover:bg-red-100"
               >
-                {list.name}
+                {list.title}
               </Badge>
             )}
           </div>

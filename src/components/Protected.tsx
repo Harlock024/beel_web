@@ -6,7 +6,5 @@ import { useAuthStore } from "../stores/useAuthStore";
 export function Protected({ children }: { children: React.ReactNode }) {
   const isAuthenticated = useAuthStore((state) => state.user);
 
-  console.log(isAuthenticated);
-
   return <>{isAuthenticated ? children : null}</>;
 }
