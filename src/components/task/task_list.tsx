@@ -10,8 +10,9 @@ export function TaskList() {
 
   const showTasks = filteredTasks.length > 0 ? filteredTasks : tasks;
 
-  console.log("show tasks", showTasks);
-
+  if (!showTasks) {
+    return <div>No tasks found</div>;
+  }
   return (
     <div className="space-y-2">
       {showTasks.map((task, index) => (

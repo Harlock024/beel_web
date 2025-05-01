@@ -23,6 +23,7 @@ export function TaskForm() {
       addTask(newTask);
       setTaskName("");
       toast.success("Task added successfully!");
+      return;
     }
     toast.error("Task name cannot be empty!");
   }
