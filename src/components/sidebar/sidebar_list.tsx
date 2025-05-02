@@ -94,7 +94,7 @@ export function SidebarList() {
           ))
         )}
       </div>
-
+      {/*
       <div className="mt-4">
         <Button
           type="button"
@@ -104,7 +104,7 @@ export function SidebarList() {
         >
           <Plus className="size-3" /> Nueva Lista
         </Button>
-      </div>
+      </div> */}
     </div>
   );
 }

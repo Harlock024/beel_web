@@ -15,19 +15,13 @@ import { Toaster } from "react-hot-toast";
     </head>
     <body class="m-0 min-h-screen">
         <div class="flex min-h-screen">
-            <!-- Sidebar -->
             <div class="w-64 bg-gray-100 border-r">
                 <Sidebar client:load />
             </div>
 
-            <!-- Main content -->
             <main class="flex-1 overflow-auto p-4">
                 <slot />
             </main>
-
-            <!-- Task Details Panel -->
-
-            <TaskDetails client:load />
         </div>
     </body>
     <Toaster position="bottom-right" client:load />

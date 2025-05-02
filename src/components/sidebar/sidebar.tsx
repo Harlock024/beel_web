@@ -11,17 +11,12 @@ export default function Sidebar() {
         <h1 className="text-xl font-semibold text-black mb-8">Beel</h1>
 
         <nav className="space-y-6">
-          <SidebarTask className="" />
           <SidebarList />
 
-          <div>
-            <h2 className="text-xs uppercase tracking-wider text-gray-500 font-medium mb-2">
-              Tags
-            </h2>
-          </div>
+          <div></div>
         </nav>
       </div>
-      <div className="px-6 py-4">
+      {/* <div className="px-6 py-4">
         {user ? (
           <SidebarUser />
         ) : (
@@ -29,7 +24,7 @@ export default function Sidebar() {
             Please log in to access your account.
           </div>
         )}
-      </div>
+      </div> */}
     </aside>
   );
 }

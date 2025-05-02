@@ -22,7 +22,29 @@ type Store = {
 };
 
 export const useListStore = create<Store>((set, get) => ({
-  lists: [],
+  lists: [
+    {
+      id: "1",
+      title: "Lista de tareas",
+      color: "#FF5733",
+      tasks: [],
+      tasksCount: 0,
+    },
+    {
+      id: "2",
+      title: "Lista de compras",
+      color: "#33FF57",
+      tasks: [],
+      tasksCount: 0,
+    },
+    {
+      id: "3",
+      title: "Lista de pendientes",
+      color: "#5733FF",
+      tasks: [],
+      tasksCount: 0,
+    },
+  ],
   selectedListId: null,
 
   getList: (id) => {
