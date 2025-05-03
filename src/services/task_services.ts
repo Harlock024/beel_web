@@ -32,12 +32,14 @@ export async function FetchTasks(): Promise<TaskResponse> {
 
 export async function CreateTask({
   title,
-  listId,
+  list_id,
 }: {
   title: string;
-  listId?: string;
+  list_id?: string;
 }): Promise<Task> {
   const accessToken = useAuthStore.getState().accessToken;
+
+  console.log(title, list_id);
 
   if (!accessToken) {
     throw new Error("No access token found");
@@ -52,7 +54,7 @@ export async function CreateTask({
       },
       body: JSON.stringify({
         title,
-        listId,
+        list_id,
       }),
     });
 

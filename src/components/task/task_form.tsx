@@ -13,12 +13,14 @@ export function TaskForm() {
   const { selectedListId } = useListStore();
   const [taskName, setTaskName] = useState("");
 
+  console.log("task form list selected", selectedListId);
+
   function handleAddTask(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (taskName !== null) {
       const newTask: Task = {
         title: taskName,
-        list_id: selectedListId,
+        list_id: selectedListId ?? undefined,
         completed: false,
       };
       addTask(newTask);

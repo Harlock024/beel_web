@@ -7,11 +7,22 @@ export type FilterType = "all" | "today" | "upcoming" | undefined;
 
 type FilterStore = {
   filteredTasks: Task[];
+  isFiltering: boolean;
+  activeFilters: {
+    listId?: string;
+    dateFilter?: FilterType;
+  };
   filterTasks: (filters?: { listId?: string; dateFilter?: FilterType }) => void;
 };
 
 export const useFiltersStore = create<FilterStore>((set) => ({
   filteredTasks: [],
+  isFiltering: false,
+  activeFilters: {
+    listId: undefined,
+    dateFilter: undefined,
+  },
+
   filterTasks: (filters) => {
     const tasks = useTaskStore.getState().tasks;
     const { listId, dateFilter } = filters || {};
@@ -36,6 +47,11 @@ export const useFiltersStore = create<FilterStore>((set) => ({
       return belongsToList;
     });
 
-    set({ filteredTasks: filtered });
+    set({
+      filteredTasks: filtered,
+      isFiltering:
+        filters?.listId !== undefined || filters?.dateFilter !== undefined,
+      activeFilters: filters,
+    });
   },
 }));

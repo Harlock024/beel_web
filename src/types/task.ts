@@ -3,7 +3,7 @@ import { Tag } from "./tag";
 export type Task = {
   id?: string;
   title: string;
-  list_id: string | null;
+  list_id: string | undefined;
   sub_tasks?: Subtask[];
   tags?: Tag[];
   description?: string;

@@ -1,19 +1,23 @@
 import { useFiltersStore } from "@/stores/useFilterStore";
 import { useTaskStore } from "@/stores/task_store";
 import { TaskCard } from "./task_card";
-import { useEffect } from "react";
 
 export function TaskList() {
-  const { tasks, getTasks } = useTaskStore();
-  const { filteredTasks } = useFiltersStore();
+  const { tasks } = useTaskStore();
+  const { filteredTasks, activeFilters } = useFiltersStore();
 
-  const showTasks = filteredTasks.length > 0 ? filteredTasks : tasks;
+  const isFiltering = !!activeFilters.listId;
 
-  if (!showTasks) {
-    return <div>No tasks found</div>;
-  }
-  if (filteredTasks.length === 0) {
-    return <div>No tasks found</div>;
+  const showTasks = isFiltering ? filteredTasks : tasks;
+
+  if (showTasks.length === 0) {
+    return (
+      <div className="text-center text-muted-foreground">
+        {isFiltering
+          ? "No tasks assigned to this list"
+          : "No tasks created yet"}
+      </div>
+    );
   }
 
   return (

@@ -12,6 +12,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
+import { useFiltersStore } from "@/stores/useFilterStore";
 
 type TaskDetailsProps = {
   className?: string;
@@ -21,6 +22,7 @@ type TaskDetailsProps = {
 export function TaskDetails({ className, task }: TaskDetailsProps) {
   const { updateTask, removeTask, closeTask } = useTaskStore();
   const { lists, countedTask } = useListStore();
+  const { filterTasks, filteredTasks } = useFiltersStore();
   const [currentTask, setCurrentTask] = useState<Task | undefined>(task);
   const [isSaving, setIsSaving] = useState(false);
 
@@ -51,10 +53,14 @@ export function TaskDetails({ className, task }: TaskDetailsProps) {
     if (!task?.id) return;
 
     removeTask(task.id);
+
     if (task.list_id) {
       countedTask(task.list_id);
-      setCurrentTask(undefined);
     }
+
+    filterTasks({ listId: task.list_id || undefined });
+
+    setCurrentTask(undefined);
   };
 
   const handleDateChange = (date: Date | undefined) => {
