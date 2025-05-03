@@ -2,6 +2,7 @@ import { API_URL } from "./api_url";
 import { Task, TaskResponse } from "../types/task";
 
 import { useAuthStore } from "@/stores/useAuthStore";
+import { List } from "lucide-react";
 export async function FetchTasks(): Promise<TaskResponse> {
   const accessToken = useAuthStore.getState().accessToken;
 
@@ -31,10 +32,10 @@ export async function FetchTasks(): Promise<TaskResponse> {
 
 export async function CreateTask({
   title,
-  listid,
+  listId,
 }: {
   title: string;
-  listid?: string;
+  listId?: string;
 }): Promise<Task> {
   const accessToken = useAuthStore.getState().accessToken;
 
@@ -51,7 +52,7 @@ export async function CreateTask({
       },
       body: JSON.stringify({
         title,
-        listid,
+        listId,
       }),
     });
 

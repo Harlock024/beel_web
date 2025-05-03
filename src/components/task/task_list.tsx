@@ -6,13 +6,16 @@ import { useEffect } from "react";
 export function TaskList() {
   const { tasks, getTasks } = useTaskStore();
   const { filteredTasks } = useFiltersStore();
-  console.log("all tasks", tasks);
 
   const showTasks = filteredTasks.length > 0 ? filteredTasks : tasks;
 
   if (!showTasks) {
     return <div>No tasks found</div>;
   }
+  if (filteredTasks.length === 0) {
+    return <div>No tasks found</div>;
+  }
+
   return (
     <div className="space-y-2">
       {showTasks.map((task, index) => (

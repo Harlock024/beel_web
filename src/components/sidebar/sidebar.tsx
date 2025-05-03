@@ -6,14 +6,11 @@ import { SidebarUser } from "./sidebar_user";
 export default function Sidebar() {
   const { user } = useAuthStore();
   return (
-    <aside className="h-screen w-64 border-r border-gray-200 bg-white fixed left-0 top-0 flex flex-col justify-between">
-      <div className="px-6 py-8">
+    <aside className="h-screen w-[320px] border-r border-gray-200 bg-white fixed left-0 top-0 flex flex-col justify-between">
+      <div className=" h-full px-6 py-8">
         <h1 className="text-xl font-semibold text-black mb-8">Beel</h1>
-
-        <nav className="space-y-6">
+        <nav className="h-full ">
           <SidebarList />
-
-          <div></div>
         </nav>
       </div>
       {/* <div className="px-6 py-4">

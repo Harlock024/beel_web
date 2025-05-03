@@ -28,7 +28,6 @@ export const useTaskStore = create<TaskState>((set) => ({
   addTask: async (newTask: Task) => {
     const newTaskResponse = await CreateTask(newTask);
 
-    console.log("new task status:", newTaskResponse);
     set((state) => ({ tasks: [...state.tasks, newTaskResponse] }));
   },
   removeTask: async (id: string) => {

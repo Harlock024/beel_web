@@ -4,11 +4,12 @@ import { useTaskStore } from "@/stores/task_store";
 
 import { Plus } from "lucide-react";
 import { useListStore } from "@/stores/list_store";
-import { FilterType } from "@/stores/useFilterStore";
+import { FilterType, useFiltersStore } from "@/stores/useFilterStore";
 import toast from "react-hot-toast";
 
 export function TaskForm() {
   const { addTask } = useTaskStore();
+  const { filterTasks } = useFiltersStore();
   const { selectedListId } = useListStore();
   const [taskName, setTaskName] = useState("");
 
@@ -42,7 +43,7 @@ export function TaskForm() {
             onChange={(e) => setTaskName(e.target.value)}
           />
         </div>
-        <button className="" type="submit">
+        <button className="hidden" type="submit">
           Add Task
         </button>
       </form>

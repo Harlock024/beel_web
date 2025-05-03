@@ -5,6 +5,7 @@ import { FormEvent, useEffect, useState } from "react";
 import { ListForm } from "../list/list_form";
 import { Button } from "../ui/button";
 import { List } from "@/types/list";
+import { ScrollArea } from "../ui/scroll-area";
 
 function ListCard({
   list,
@@ -19,7 +20,7 @@ function ListCard({
     <button
       key={list.id}
       onClick={() => handleListClick(list.id)}
-      className={`w-full flex items-center gap-2 text-sm px-2 py-1 rounded transition-colors
+      className={`w-full flex items-center gap-2 text-sm px-3 py-2 rounded transition-colors
         ${
           selectedListId === list.id
             ? "bg-black text-white"
@@ -43,8 +44,6 @@ export function SidebarList() {
     undefined,
   );
 
-  console.log("lists", lists);
-
   useEffect(() => {
     fetchLists();
   }, []);
@@ -61,50 +60,47 @@ export function SidebarList() {
   };
 
   return (
-    <div className="py-2">
-      <div className="flex items-center justify-between mb-2">
-        <h2 className="text-xs uppercase tracking-wider text-gray-500 font-medium">
-          Listas
-        </h2>
-        <button
-          onClick={handleToggleForm}
-          className="text-gray-400 hover:text-gray-600"
-        >
-          <Plus className="size-4" />
-        </button>
+    <div className="h-full flex flex-col  justify-start">
+      <div className="py-2 px-1">
+        <div className="flex items-center justify-between mb-3 px-1">
+          <h2 className="text-xs uppercase tracking-wider text-gray-500 font-medium">
+            Lists
+          </h2>
+        </div>
+
+        <div className="space-y-1  overflow-y-auto pr-1">
+          <ScrollArea>
+            {lists.length === 0 ? (
+              <div className="text-sm text-gray-400 py-1">No hay listas</div>
+            ) : (
+              lists.map((list, index) => (
+                <ListCard
+                  key={index}
+                  list={list}
+                  selectedListId={selectedListId}
+                  handleListClick={handleListClick}
+                />
+              ))
+            )}
+          </ScrollArea>
+        </div>
       </div>
 
-      {isToggleForm && (
-        <div className="mb-3">
-          <ListForm />
-        </div>
-      )}
-
-      <div className="space-y-1 max-h-64 overflow-y-auto">
-        {lists.length === 0 ? (
-          <div className="text-sm text-gray-400 py-1">No hay listas</div>
+      <div className="flex border-t h-full items-end justify-center mb-5 border-gray-200 px-4 py-4">
+        {isToggleForm ? (
+          <div className="mb-3">
+            <ListForm />
+          </div>
         ) : (
-          lists.map((list, index) => (
-            <ListCard
-              key={index}
-              list={list}
-              selectedListId={selectedListId}
-              handleListClick={handleListClick}
-            />
-          ))
+          <button
+            onClick={handleToggleForm}
+            className="w-full flex items-center gap-2"
+          >
+            <Plus className="size-4" />
+            New List
+          </button>
         )}
       </div>
-      {/*
-      <div className="mt-4">
-        <Button
-          type="button"
-          variant="ghost"
-          onClick={handleToggleForm}
-          className="w-full flex items-center justify-center gap-1 text-gray-500 hover:text-gray-700 hover:bg-gray-100"
-        >
-          <Plus className="size-3" /> Nueva Lista
-        </Button>
-      </div> */}
     </div>
   );
 }

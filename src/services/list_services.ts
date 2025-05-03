@@ -17,7 +17,7 @@ export async function FetchLists(): Promise<ListsResponseProp> {
       },
     });
     const data = await response.json();
-    console.log(data);
+
     return data;
   } catch (error) {
     console.error("Error fetching lists:", error);

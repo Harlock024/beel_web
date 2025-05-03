@@ -12,7 +12,7 @@ import { useState } from "react";
 import { useFiltersStore, FilterType } from "@/stores/useFilterStore";
 import { Button } from "../ui/button";
 
-export function SidebarTask({ className }: { className: string }) {
+export function SidebarTask({ className }: { className?: string }) {
   const { filterTasks } = useFiltersStore();
   const [selectedFilter, setSelectedFilter] = useState<FilterType | undefined>(
     "all",

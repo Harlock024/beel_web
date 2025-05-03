@@ -22,43 +22,16 @@ type Store = {
 };
 
 export const useListStore = create<Store>((set, get) => ({
-  lists: [
-    {
-      id: "1",
-      title: "Lista de tareas",
-      color: "#FF5733",
-      tasks: [],
-      tasksCount: 0,
-    },
-    {
-      id: "2",
-      title: "Lista de compras",
-      color: "#33FF57",
-      tasks: [],
-      tasksCount: 0,
-    },
-    {
-      id: "3",
-      title: "Lista de pendientes",
-      color: "#5733FF",
-      tasks: [],
-      tasksCount: 0,
-    },
-  ],
+  lists: [],
   selectedListId: null,
-
   getList: (id) => {
     set({ selectedListId: id });
   },
   fetchLists: async () => {
     const listsResponse = await FetchLists();
-    console.log(listsResponse);
+
     set({ lists: listsResponse.lists });
   },
-  // selectedList: () => {
-  //   const { selectedListId, lists } = get();
-  //   return lists.find((l) => l.id === selectedListId) || null;
-  // },
 
   createList: async (title, color) => {
     const newListResponse = await CreateList(title, color);

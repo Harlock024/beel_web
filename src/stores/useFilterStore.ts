@@ -19,17 +19,21 @@ export const useFiltersStore = create<FilterStore>((set) => ({
     const filtered = tasks.filter((task) => {
       const belongsToList = listId ? task.list_id === listId : true;
 
-      if (!task.due_date) return false;
+      if (dateFilter) {
+        if (!task.due_date) return false;
 
-      const dueDate = parseISO(task.due_date);
-      const matchesDate =
-        dateFilter === "today"
-          ? isToday(dueDate)
-          : dateFilter === "upcoming"
-            ? isFuture(dueDate) && !isToday(dueDate)
-            : true;
+        const dueDate = parseISO(task.due_date);
+        const matchesDate =
+          dateFilter === "today"
+            ? isToday(dueDate)
+            : dateFilter === "upcoming"
+              ? isFuture(dueDate) && !isToday(dueDate)
+              : true;
 
-      return belongsToList && matchesDate;
+        return belongsToList && matchesDate;
+      }
+
+      return belongsToList;
     });
 
     set({ filteredTasks: filtered });

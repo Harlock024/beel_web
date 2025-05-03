@@ -12,27 +12,21 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
-// import { TagSelect } from "../tags/tagSelect";
 
 type TaskDetailsProps = {
   className?: string;
+  task?: Task;
 };
 
-export function TaskDetails({ className }: TaskDetailsProps) {
-  const { task, updateTask, removeTask, closeTask } = useTaskStore();
+export function TaskDetails({ className, task }: TaskDetailsProps) {
+  const { updateTask, removeTask, closeTask } = useTaskStore();
   const { lists, countedTask } = useListStore();
   const [currentTask, setCurrentTask] = useState<Task | undefined>(task);
   const [isSaving, setIsSaving] = useState(false);
-  console.log("currentTask", currentTask);
 
   useEffect(() => {
     setCurrentTask(task);
   }, [task]);
-
-  const handleCloseTask = () => {
-    closeTask();
-    setCurrentTask(undefined);
-  };
 
   const handleEditTask = async (e: FormEvent) => {
     e.preventDefault();
@@ -95,7 +89,7 @@ export function TaskDetails({ className }: TaskDetailsProps) {
     return (
       <div
         className={cn(
-          "flex flex-col justify-center  items-center h-screen max-h-[100vh] overflow-y-auto text-muted-foreground",
+          "flex flex-col justify-center  items-center h-full max-h-[100vh] overflow-y-auto text-muted-foreground",
           className,
         )}
       >
@@ -107,20 +101,7 @@ export function TaskDetails({ className }: TaskDetailsProps) {
   }
 
   return (
-    <div className={cn("w-80 border-l bg-white flex flex-col ", className)}>
-      {/* Header */}
-      <div className="flex justify-between items-center p-4 border-b">
-        <h3 className="font-semibold">Task Details</h3>
-        <button
-          type="button"
-          onClick={handleCloseTask}
-          className="rounded-full p-1 hover:bg-gray-100 transition-colors"
-          aria-label="Close task details"
-        >
-          <X size={18} />
-        </button>
-      </div>
-
+    <div className={cn("w-full border-l  flex flex-col ", className)}>
       {/* Content */}
       <div className="flex-1 overflow-y-auto p-4 space-y-6">
         {/* Task Name */}
@@ -211,15 +192,6 @@ export function TaskDetails({ className }: TaskDetailsProps) {
             </PopoverContent>
           </Popover>
         </div>
-
-        {/* Tags */}
-        {/* <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Tags
-          </label>
-          <TagSelect taskSelected={currentTask} />
-        </div>
-      </div> */}
 
         {/* Footer Actions */}
         <div className="p-4 border-t space-y-2">
