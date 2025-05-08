@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { useFiltersStore } from "@/stores/useFilterStore";
+import toast from "react-hot-toast";
 
 type TaskDetailsProps = {
   className?: string;
@@ -44,22 +45,19 @@ export function TaskDetails({ className, task }: TaskDetailsProps) {
     };
     updateTask(updatedTask);
     countedTask(currentTask.list_id!);
-
+    toast.success("Task updated successfully");
     setIsSaving(false);
   };
 
   const handleRemoveTask = async (e: FormEvent) => {
     e.preventDefault();
     if (!task?.id) return;
-
     removeTask(task.id);
-
     if (task.list_id) {
       countedTask(task.list_id);
     }
-
     filterTasks({ listId: task.list_id || undefined });
-
+    toast.success("Task removed successfully");
     setCurrentTask(undefined);
   };
 

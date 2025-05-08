@@ -9,7 +9,13 @@ import { Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useListStore } from "@/stores/list_store";
 
-export function ListForm({ onComplete }: { onComplete?: () => void }) {
+export function ListForm({
+  list_id,
+  onComplete,
+}: {
+  list_id?: string;
+  onComplete?: () => void;
+}) {
   const nameRef = useRef<HTMLInputElement>(null);
   const [color, setColor] = useState("#aabbcc");
   const { createList } = useListStore();

@@ -16,7 +16,7 @@ type Store = {
   getList: (id: string) => void;
   fetchLists: () => void;
   createList: (title: string, color: string) => void;
-  updateList: (id: string, updatedList: Partial<List>) => void;
+  updateList: (updatedList: Partial<List>) => void;
   deleteList: (id: string) => void;
   countedTask: (listId: string) => void;
 };
@@ -37,12 +37,12 @@ export const useListStore = create<Store>((set, get) => ({
     const newListResponse = await CreateList(title, color);
     set((state) => ({ lists: [...state.lists, newListResponse] }));
   },
-  updateList: async (id, updatedList) => {
-    const updated = await UpdateList(id, updatedList);
+  updateList: async (updatedList) => {
+    const updated = await UpdateList(updatedList);
 
     set((state) => ({
       lists: state.lists.map((list) =>
-        list.id === id ? { ...list, ...updated } : list,
+        list.id === updatedList.id ? { ...list, ...updated } : list,
       ),
     }));
   },

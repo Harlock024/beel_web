@@ -10,6 +10,12 @@ export function TaskList() {
 
   const showTasks = isFiltering ? filteredTasks : tasks;
 
+  if (!tasks) {
+    return (
+      <div className="text-center text-muted-foreground">Create a task</div>
+    );
+  }
+
   if (showTasks.length === 0) {
     return (
       <div className="text-center text-muted-foreground">

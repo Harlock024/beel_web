@@ -1,7 +1,7 @@
 import { Task } from "./task";
 
 export interface List {
-  id: string;
+  id?: string;
   title: string;
   color?: string;
 }

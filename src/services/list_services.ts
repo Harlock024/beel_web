@@ -49,7 +49,6 @@ export async function CreateList(name: string, color: string): Promise<List> {
   }
 }
 export async function UpdateList(
-  id: string,
   list: Partial<List>,
 ): Promise<ListsResponseProp> {
   const accessToken = useAuthStore.getState().accessToken;
@@ -59,7 +58,7 @@ export async function UpdateList(
   }
 
   try {
-    const response = await fetch(`${API_URL}/api/lists/${id}`, {
+    const response = await fetch(`${API_URL}/api/lists/${list.id}`, {
       method: "PUT",
       headers: {
         Authorization: `Bearer ${accessToken}`,
