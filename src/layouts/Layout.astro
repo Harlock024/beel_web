@@ -3,26 +3,31 @@ import { TaskDetails } from "@/components/task/task_details";
 import Sidebar from "../components/sidebar/sidebar";
 import "../styles/global.css";
 import { Toaster } from "react-hot-toast";
+import { ClientRouter } from "astro:transitions";
+
+const { title } = Astro.props;
 ---
 
 <!doctype html>
 <html lang="en">
     <head>
         <meta charset="UTF-8" />
+        <meta name="generator" content={Astro.generator} />
         <meta name="viewport" content="width=device-width" />
         <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-        <title>Beel Project</title>
+        <title>Beel Project {title}</title>
+        <ClientRouter />
     </head>
     <body class="m-0 min-h-screen">
         <div class="flex min-h-screen">
             <div class="w-[320px] bg-gray-100 border-r">
-                <Sidebar client:load />
+                <aside transition:persist>
+                    <Sidebar client:visible />
+                </aside>
             </div>
-
             <main class="flex-1 overflow-auto p-4">
                 <slot />
             </main>
         </div>
-    </body>
-    <Toaster position="bottom-right" client:load />
+    </body><Toaster position="bottom-right" client:load />
 </html>

@@ -1,14 +1,20 @@
-import { useFiltersStore } from "@/stores/useFilterStore";
 import { useTaskStore } from "@/stores/task_store";
 import { TaskCard } from "./task_card";
+import { useListStore } from "@/stores/list_store";
+import { useEffect } from "react";
 
-export function TaskList() {
-  const { tasks } = useTaskStore();
-  const { filteredTasks, activeFilters } = useFiltersStore();
+export function TaskList({ list_id }: { list_id: string }) {
+  const { tasks, getTasks } = useTaskStore();
 
-  const isFiltering = !!activeFilters.listId;
+  useEffect(() => {
+    if (list_id) {
+      getTasks(list_id);
+    } else {
+      console.error("No list ID provided");
+    }
+  }, [list_id]);
 
-  const showTasks = isFiltering ? filteredTasks : tasks;
+  console.log("list id  to task", list_id);
 
   if (!tasks) {
     return (
@@ -16,19 +22,16 @@ export function TaskList() {
     );
   }
 
-  if (showTasks.length === 0) {
+  if (tasks.length === 0) {
     return (
       <div className="text-center text-muted-foreground">
-        {isFiltering
-          ? "No tasks assigned to this list"
-          : "No tasks created yet"}
+        {tasks ? "No tasks assigned to this list" : "No tasks created yet"}
       </div>
     );
   }
-
   return (
     <div className="space-y-2">
-      {showTasks.map((task, index) => (
+      {tasks.map((task, index) => (
         <TaskCard key={index} task={task} />
       ))}
     </div>

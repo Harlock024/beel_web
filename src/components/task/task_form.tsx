@@ -4,16 +4,12 @@ import { useTaskStore } from "@/stores/task_store";
 
 import { Plus } from "lucide-react";
 import { useListStore } from "@/stores/list_store";
-import { FilterType, useFiltersStore } from "@/stores/useFilterStore";
 import toast from "react-hot-toast";
 
 export function TaskForm() {
   const { addTask } = useTaskStore();
-  const { filterTasks } = useFiltersStore();
   const { selectedListId } = useListStore();
   const [taskName, setTaskName] = useState("");
-
-  console.log("task form list selected", selectedListId);
 
   function handleAddTask(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
