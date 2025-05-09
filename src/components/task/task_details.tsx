@@ -153,7 +153,6 @@ export function TaskDetails({ className, task }: TaskDetailsProps) {
             onChange={handleListChange}
             className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
           >
-            <option value="">None</option>
             {lists.map((list) => (
               <option key={list.id} value={list.id}>
                 {list.title}
@@ -161,7 +160,6 @@ export function TaskDetails({ className, task }: TaskDetailsProps) {
             ))}
           </select>
         </div>
-
         {/* Due Date */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">

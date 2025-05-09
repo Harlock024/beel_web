@@ -23,6 +23,8 @@ export const useTaskStore = create<TaskState>((set) => ({
   tasks: [],
   task: undefined,
   getTasks: async (list_id) => {
+    set({ tasks: [] });
+
     const response = await FetchTasks({ list_id });
     set({ tasks: response.tasks });
   },
