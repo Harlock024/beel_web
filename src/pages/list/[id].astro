@@ -1,0 +1,15 @@
+---
+import { TaskForm } from "@/components/task/task_form";
+import { TaskList } from "@/components/task/task_list";
+import Layout from "@/layouts/Layout.astro";
+const { id } = Astro.params;
+
+if (!id) {
+    throw new Error("no list id provided");
+}
+---
+
+<Layout title={`list - ${id}`}>
+    <TaskForm client:load />
+    <TaskList list_id={id} client:load />
+</Layout>

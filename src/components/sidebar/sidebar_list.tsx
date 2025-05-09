@@ -1,6 +1,5 @@
 import { useListStore } from "@/stores/list_store";
 import { List as ListIcon, Plus } from "lucide-react";
-import { useFiltersStore } from "@/stores/useFilterStore";
 import { FormEvent, useEffect, useState } from "react";
 import { ListForm } from "../list/list_form";
 import { Button } from "../ui/button";
@@ -12,14 +11,15 @@ import { ListCard } from "../list/listCard";
 export function SidebarList() {
   const { lists, fetchLists } = useListStore();
   const [isToggleForm, setToggleForm] = useState(false);
-  const { filterTasks } = useFiltersStore();
   const { selectedListId, getList } = useListStore();
   const [selectedList, setSelectedListId] = useState<string | undefined>(
     undefined,
   );
 
   useEffect(() => {
-    fetchLists();
+    if (lists.length === 0) {
+      fetchLists();
+    }
   }, []);
 
   const handleToggleForm = (e: FormEvent) => {
@@ -28,12 +28,9 @@ export function SidebarList() {
   };
 
   const handleListClick = (listId: string) => {
-    const newSelected = selectedListId === listId ? undefined : listId;
-    setSelectedListId(newSelected);
-
-    getList(newSelected!);
-
-    filterTasks({ listId: newSelected });
+    if (selectedListId === listId) return;
+    setSelectedListId(listId);
+    getList(listId);
   };
 
   return (
@@ -44,7 +41,6 @@ export function SidebarList() {
             Lists
           </h2>
         </div>
-
         <div className="space-y-1  overflow-y-auto pr-1">
           <ScrollArea className="h-96">
             {lists.length === 0 ? (

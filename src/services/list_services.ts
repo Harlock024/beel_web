@@ -25,7 +25,7 @@ export async function FetchLists(): Promise<ListsResponseProp> {
   }
 }
 
-export async function CreateList(name: string, color: string): Promise<List> {
+export async function CreateList(title: string, color: string): Promise<List> {
   const accessToken = useAuthStore.getState().accessToken;
 
   if (!accessToken) {
@@ -39,7 +39,7 @@ export async function CreateList(name: string, color: string): Promise<List> {
         Authorization: `Bearer ${accessToken}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ name, color }),
+      body: JSON.stringify({ title, color }),
     });
     const data = await response.json();
     return data.list;
@@ -64,7 +64,7 @@ export async function UpdateList(
         Authorization: `Bearer ${accessToken}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ list }),
+      body: JSON.stringify({ title: list.title, color: list.color }),
     });
     const data = await response.json();
     return data;
@@ -73,7 +73,6 @@ export async function UpdateList(
     throw error;
   }
 }
-
 export async function DeleteList(id: string): Promise<void> {
   const accessToken = useAuthStore.getState().accessToken;
 

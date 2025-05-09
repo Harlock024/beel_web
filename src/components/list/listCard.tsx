@@ -9,6 +9,7 @@ import {
 } from "../ui/context-menu";
 import { useState } from "react";
 import { ModalEditTaskForm } from "./modal_list_form";
+import { Separator } from "@radix-ui/react-select";
 
 export function ListCard({
   list,
@@ -21,6 +22,7 @@ export function ListCard({
 }) {
   const [isEditingList, setIsEditingList] = useState(false);
   const [isDeletingList, setIsDeletingList] = useState(false);
+  const { deleteList, updateList } = useListStore();
 
   const handleEditList = () => {
     setIsEditingList(true);
@@ -28,13 +30,15 @@ export function ListCard({
 
   const handleDeleteList = () => {
     setIsDeletingList(true);
+    deleteList(list.id!);
   };
 
   return (
     <>
       <ContextMenu>
         <ContextMenuTrigger>
-          <button
+          <a
+            href={`/list/${list.id}`}
             key={list.id}
             onClick={() => handleListClick(list.id!)}
             className={`w-full flex items-center gap-2 text-sm px-3 py-2 rounded transition-colors
@@ -49,10 +53,11 @@ export function ListCard({
               style={{ backgroundColor: list.color }}
             ></div>
             <span className="truncate">{list.title}</span>
-          </button>
+          </a>
         </ContextMenuTrigger>
         <ContextMenuContent>
           <ContextMenuItem onClick={handleEditList}>Edit List</ContextMenuItem>
+
           <ContextMenuItem onClick={handleDeleteList}>
             Delete List
           </ContextMenuItem>

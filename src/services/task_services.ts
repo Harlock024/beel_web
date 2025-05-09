@@ -1,20 +1,25 @@
 import { API_URL } from "./api_url";
 import { Task, TaskResponse } from "../types/task";
-
 import { useAuthStore } from "@/stores/useAuthStore";
-import { List } from "lucide-react";
-export async function FetchTasks(): Promise<TaskResponse> {
+
+export async function FetchTasks({
+  list_id,
+}: {
+  list_id: string | null;
+}): Promise<TaskResponse> {
   const accessToken = useAuthStore.getState().accessToken;
 
   if (!accessToken) {
     throw new Error("No access token found");
   }
-
+  if (!list_id) {
+    throw new Error("no list selected");
+  }
   try {
-    const response = await fetch(API_URL + "/api/tasks", {
+    const response = await fetch(`${API_URL}/api/lists/${list_id}/tasks`, {
+      method: "GET",
       headers: {
         "Content-Type": "application/json",
-
         Authorization: `Bearer ${accessToken}`,
       },
     });
@@ -46,7 +51,7 @@ export async function CreateTask({
   }
 
   try {
-    const response = await fetch(API_URL + "/api/tasks", {
+    const response = await fetch(`${API_URL}/api/lists/${list_id}/tasks`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${accessToken}`,
@@ -54,14 +59,11 @@ export async function CreateTask({
       },
       body: JSON.stringify({
         title,
-        list_id,
       }),
     });
-
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
-
     const data = await response.json();
     return data.task;
   } catch (error) {

@@ -2,6 +2,8 @@ import { useAuthStore } from "@/stores/useAuthStore";
 import { SidebarList } from "./sidebar_list";
 import { SidebarTask } from "./sidebar_task";
 import { SidebarUser } from "./sidebar_user";
+import { Home } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 export default function Sidebar() {
   const { user } = useAuthStore();
@@ -10,6 +12,12 @@ export default function Sidebar() {
       <div className=" h-full px-6 py-8">
         <h1 className="text-xl font-semibold text-black mb-8">Beel</h1>
         <nav className="h-full ">
+          <section className="">
+            <a href="/home" className="flex gap-2">
+              <Home />
+              Home
+            </a>
+          </section>
           <SidebarList />
         </nav>
       </div>

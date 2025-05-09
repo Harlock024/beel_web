@@ -12,7 +12,6 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
-import { useFiltersStore } from "@/stores/useFilterStore";
 import toast from "react-hot-toast";
 
 type TaskDetailsProps = {
@@ -23,7 +22,6 @@ type TaskDetailsProps = {
 export function TaskDetails({ className, task }: TaskDetailsProps) {
   const { updateTask, removeTask, closeTask } = useTaskStore();
   const { lists, countedTask } = useListStore();
-  const { filterTasks, filteredTasks } = useFiltersStore();
   const [currentTask, setCurrentTask] = useState<Task | undefined>(task);
   const [isSaving, setIsSaving] = useState(false);
 
@@ -56,7 +54,6 @@ export function TaskDetails({ className, task }: TaskDetailsProps) {
     if (task.list_id) {
       countedTask(task.list_id);
     }
-    filterTasks({ listId: task.list_id || undefined });
     toast.success("Task removed successfully");
     setCurrentTask(undefined);
   };

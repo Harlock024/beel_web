@@ -6,12 +6,13 @@ import {
   UpdateTask,
 } from "../services/task_services";
 import { Task } from "../types/task";
+import { useListStore } from "./list_store";
 
 type TaskState = {
   tasks: Task[];
   task?: Task;
   setTask: (id: string) => void;
-  getTasks: () => void;
+  getTasks: (list_id: string) => void;
   closeTask: () => void;
   addTask: (newTask: Task) => void;
   removeTask: (id: string) => void;
@@ -21,8 +22,8 @@ type TaskState = {
 export const useTaskStore = create<TaskState>((set) => ({
   tasks: [],
   task: undefined,
-  getTasks: async () => {
-    const response = await FetchTasks();
+  getTasks: async (list_id) => {
+    const response = await FetchTasks({ list_id });
     set({ tasks: response.tasks });
   },
   addTask: async (newTask: Task) => {
