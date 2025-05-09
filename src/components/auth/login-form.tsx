@@ -54,7 +54,7 @@ export function LoginForm({
         await login(email, password);
 
         toast.success("Login successful");
-        window.location.href = "/dashboard";
+        window.location.href = "/home";
       } catch (error) {
         toast.error("Login failed");
         console.error("Login failed:", error);

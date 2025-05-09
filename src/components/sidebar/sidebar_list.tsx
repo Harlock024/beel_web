@@ -59,7 +59,7 @@ export function SidebarList() {
         </div>
       </div>
 
-      <div className="flex border-t h-full items-end justify-center mb-5 border-gray-200 px-4 py-4">
+      <div className="flex border-t h-auto items-start justify-center mb-5 border-gray-200 px-4 py-4">
         {isToggleForm ? (
           <div className="mb-3">
             <ListForm />
