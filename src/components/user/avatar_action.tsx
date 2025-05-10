@@ -13,7 +13,7 @@ import {
 import { LogOut, Settings, UserCircle } from "lucide-react";
 import { useAuthStore } from "@/stores/useAuthStore";
 
-export function SidebarUser() {
+export function AvatarAction() {
   const { user } = useAuthStore();
   return user ? (
     <DropdownMenu>
