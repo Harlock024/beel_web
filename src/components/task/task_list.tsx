@@ -5,6 +5,7 @@ import { useEffect } from "react";
 
 export function TaskList({ list_id }: { list_id: string }) {
   const { tasks, getTasks } = useTaskStore();
+  console.log(tasks);
 
   useEffect(() => {
     if (list_id) {

@@ -13,7 +13,7 @@ type Store = {
   selectedListId: string | null;
 
   // Acciones
-  getList: (id: string) => void;
+  setSelectedList: (id: string) => void;
   fetchLists: () => void;
   createList: (title: string, color: string) => void;
   updateList: (updatedList: Partial<List>) => void;
@@ -24,7 +24,7 @@ type Store = {
 export const useListStore = create<Store>((set, get) => ({
   lists: [],
   selectedListId: null,
-  getList: (id) => {
+  setSelectedList: (id) => {
     set({ selectedListId: id });
   },
   fetchLists: async () => {

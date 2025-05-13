@@ -29,9 +29,30 @@ export const useTaskStore = create<TaskState>((set) => ({
     set({ tasks: response.tasks });
   },
   addTask: async (newTask: Task) => {
-    const newTaskResponse = await CreateTask(newTask);
+    const tempId = `temp-${Date.now()}`;
 
-    set((state) => ({ tasks: [...state.tasks, newTaskResponse] }));
+    const prevTask: Task = {
+      id: tempId,
+      title: newTask.title,
+      completed: newTask.completed,
+      list_id: newTask.list_id,
+    };
+    set((state) => ({ tasks: [...(state.tasks ?? []), prevTask] }));
+
+    try {
+      const newTaskResponse = await CreateTask(newTask);
+
+      set((state) => ({
+        tasks: state.tasks.map((task) =>
+          task.id === tempId ? newTaskResponse : task,
+        ),
+      }));
+    } catch (error) {
+      set((state) => ({
+        tasks: state.tasks.filter((task) => task.id !== tempId),
+      }));
+      console.error("error al crear tarea", error);
+    }
   },
   removeTask: async (id: string) => {
     await DeleteTask(id);

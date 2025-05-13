@@ -73,6 +73,7 @@ export async function UpdateList(
     throw error;
   }
 }
+
 export async function DeleteList(id: string): Promise<void> {
   const accessToken = useAuthStore.getState().accessToken;
 

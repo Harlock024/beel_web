@@ -7,22 +7,20 @@ import {
   ContextMenuItem,
   ContextMenuTrigger,
 } from "../ui/context-menu";
-import { useState } from "react";
+import { FormEvent, useState } from "react";
 import { ModalEditTaskForm } from "./modal_list_form";
 import { Separator } from "@radix-ui/react-select";
+import { prefetch } from "astro:prefetch";
 
-export function ListCard({
-  list,
-  selectedListId,
-  handleListClick,
-}: {
-  list: List;
-  selectedListId: string;
-  handleListClick: (listId: string) => void;
-}) {
+export function ListCard({ list }: { list: List }) {
   const [isEditingList, setIsEditingList] = useState(false);
   const [isDeletingList, setIsDeletingList] = useState(false);
-  const { deleteList, updateList } = useListStore();
+  const { deleteList, updateList, setSelectedList, selectedListId } =
+    useListStore();
+
+  function handleListClick(e: FormEvent) {
+    setSelectedList(list.id!);
+  }
 
   const handleEditList = () => {
     setIsEditingList(true);
@@ -40,7 +38,7 @@ export function ListCard({
           <a
             href={`/list/${list.id}`}
             key={list.id}
-            onClick={() => handleListClick(list.id!)}
+            onClick={handleListClick}
             className={`w-full flex items-center gap-2 text-sm px-3 py-2 rounded transition-colors
         ${
           selectedListId === list.id

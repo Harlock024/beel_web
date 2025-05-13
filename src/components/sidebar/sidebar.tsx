@@ -2,16 +2,7 @@ import { useEffect, useState } from "react";
 import { SidebarList } from "./sidebar_list";
 import { AvatarAction } from "../user/avatar_action";
 import { useAuthStore } from "@/stores/useAuthStore";
-import {
-  ChevronsLeft,
-  ChevronsRight,
-  Dock,
-  DoorClosedLocked,
-  Home,
-  PanelRight,
-  Pin,
-  PinOff,
-} from "lucide-react";
+import { Home, PanelRight } from "lucide-react";
 import { useSidebarStore } from "@/stores/sidebarStore";
 
 export default function Sidebar() {
@@ -20,8 +11,8 @@ export default function Sidebar() {
   return (
     <>
       <aside
-        className={`transition-all duration-300 ease-in-out   border-r
-        ${isOpen ? "w-[320px] bg-white" : "hidden"}`}
+        className={`transition-all duration-300 ease-in-out border-r bg-white
+          ${isOpen ? "w-[320px]" : "w-[0px] overflow-hidden"}`}
       >
         <div className="h-full px-6 py-4 flex flex-col justify-between">
           <div>

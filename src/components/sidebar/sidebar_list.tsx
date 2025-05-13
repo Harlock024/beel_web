@@ -11,7 +11,7 @@ import { ListCard } from "../list/listCard";
 export function SidebarList() {
   const { lists, fetchLists } = useListStore();
   const [isToggleForm, setToggleForm] = useState(false);
-  const { selectedListId, getList } = useListStore();
+  const { selectedListId, setSelectedList } = useListStore();
   const [selectedList, setSelectedListId] = useState<string | undefined>(
     undefined,
   );
@@ -27,12 +27,6 @@ export function SidebarList() {
     setToggleForm(!isToggleForm);
   };
 
-  const handleListClick = (listId: string) => {
-    if (selectedListId === listId) return;
-    setSelectedListId(listId);
-    getList(listId);
-  };
-
   return (
     <div className="h-full flex flex-col  justify-start">
       <div className="py-2 px-1">
@@ -40,40 +34,25 @@ export function SidebarList() {
           <h2 className="text-xs uppercase tracking-wider text-gray-500 font-medium">
             Lists
           </h2>
+          <button onClick={handleToggleForm}>
+            <Plus className="text-gray-400 h-5 w-5" />
+          </button>
         </div>
         <div className="space-y-1  overflow-y-auto pr-1">
-          <ScrollArea className="h-96">
+          <ScrollArea className="max-h-96">
             {lists.length === 0 ? (
               <div className="text-sm text-gray-400 py-1">No hay listas</div>
             ) : (
-              lists.map((list, index) => (
-                <ListCard
-                  key={index}
-                  list={list}
-                  selectedListId={selectedList!}
-                  handleListClick={handleListClick}
-                />
-              ))
+              lists.map((list, index) => <ListCard key={index} list={list} />)
             )}
           </ScrollArea>
         </div>
       </div>
-
-      <div className="flex border-t h-auto items-start justify-center mb-5 border-gray-200 px-4 py-4">
-        {isToggleForm ? (
-          <div className="mb-3">
-            <ListForm />
-          </div>
-        ) : (
-          <button
-            onClick={handleToggleForm}
-            className="w-full flex items-center gap-2"
-          >
-            <Plus className="size-4" />
-            New List
-          </button>
-        )}
-      </div>
+      {isToggleForm && (
+        <div className="">
+          <ListForm />
+        </div>
+      )}
     </div>
   );
 }
