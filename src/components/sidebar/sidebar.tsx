@@ -14,7 +14,6 @@ export default function Sidebar() {
       const shouldShow = window.innerWidth >= 768;
       setIsOpen(shouldShow);
     };
-
     handleResize();
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);

@@ -7,6 +7,7 @@ import {
 } from "../services/task_services";
 import { Task } from "../types/task";
 import { useListStore } from "./list_store";
+import toast from "react-hot-toast";
 
 type TaskState = {
   tasks: Task[];
@@ -24,7 +25,6 @@ export const useTaskStore = create<TaskState>((set) => ({
   task: undefined,
   getTasks: async (list_id) => {
     set({ tasks: [] });
-
     const response = await FetchTasks({ list_id });
     set({ tasks: response.tasks });
   },
@@ -66,11 +66,17 @@ export const useTaskStore = create<TaskState>((set) => ({
     set({ task });
   },
   updateTask: async (updatedTask: Task) => {
-    await UpdateTask(updatedTask);
     set((state) => ({
       tasks: state.tasks.map((task) =>
         task.id === updatedTask.id ? updatedTask : task,
       ),
     }));
+
+    try {
+      const taskRes = await UpdateTask(updatedTask);
+      if (taskRes) {
+        toast.success("task updated");
+      }
+    } catch (error) {}
   },
 }));
