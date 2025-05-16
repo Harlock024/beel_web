@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { SidebarList } from "./sidebar_list";
 import { AvatarAction } from "../user/avatar_action";
 import { useAuthStore } from "@/stores/useAuthStore";
@@ -7,24 +7,36 @@ import { useSidebarStore } from "@/stores/sidebarStore";
 
 export default function Sidebar() {
   const { user } = useAuthStore();
-  const { isOpen, toggle } = useSidebarStore();
+  const { isOpen, toggle, setIsOpen } = useSidebarStore();
+
+  useEffect(() => {
+    const handleResize = () => {
+      const shouldShow = window.innerWidth >= 768;
+      setIsOpen(shouldShow);
+    };
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, [setIsOpen]);
+
   return (
     <>
       <aside
-        className={`transition-all duration-300 ease-in-out border-r bg-white
-          ${isOpen ? "w-[320px]" : "w-[0px] overflow-hidden"}`}
+        className={`transition-all duration-300 ease-in-out border-r bg-white fixed md:static top-0 left-0 h-screen z-40
+        ${isOpen ? "w-[248px]" : "w-0 overflow-hidden"}`}
       >
         <div className="h-full px-6 py-4 flex flex-col justify-between">
           <div>
             <div className="flex justify-between items-center mb-8">
               <h1 className="text-xl font-semibold text-black">Beel</h1>
-              <div>
+
+              <div className="">
                 <button onClick={toggle}>
-                  <PanelRight />
+                  <PanelRight className="w-6 h-6 rotate-180" />
                 </button>
               </div>
             </div>
-            <nav>
+            <nav className="text-[14px]">
               <a
                 href="/home"
                 className="flex items-center gap-2 mb-4 text-gray-800 hover:text-black"

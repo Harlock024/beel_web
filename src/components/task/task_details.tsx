@@ -1,7 +1,7 @@
-import { FormEvent, useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Task } from "@/types/task";
 import { useTaskStore } from "@/stores/task_store";
-import { ChevronDown, Scan, X } from "lucide-react";
+import { X } from "lucide-react";
 import { Button } from "../ui/button";
 import { format } from "date-fns";
 import { CalendarDemo } from "../calendar/CalentadarDemo";
@@ -16,53 +16,90 @@ import toast from "react-hot-toast";
 
 type TaskDetailsProps = {
   className?: string;
-  task?: Task;
 };
 
-export function TaskDetails({ className, task }: TaskDetailsProps) {
-  const { updateTask, removeTask, closeTask } = useTaskStore();
+export function TaskDetails({ className }: TaskDetailsProps) {
+  const { updateTask, removeTask, closeTask, task } = useTaskStore();
   const { lists, countedTask } = useListStore();
   const [currentTask, setCurrentTask] = useState<Task | undefined>(task);
   const [isSaving, setIsSaving] = useState(false);
+  const sidebarRef = useRef<HTMLDivElement>(null);
+  const widthRef = useRef(400); // Ancho inicial
+
+  // Función para manejar el redimensionamiento directamente en el componente
+  const startResizing = (e: React.MouseEvent) => {
+    e.preventDefault();
+
+    const startX = e.clientX;
+    const startWidth = sidebarRef.current?.offsetWidth || 400;
+
+    document.body.style.cursor = "col-resize";
+    document.body.style.userSelect = "none";
+
+    const resize = (e: MouseEvent) => {
+      if (!sidebarRef.current) return;
+
+      // Nuevo ancho = ancho inicial + (posición inicial - posición actual)
+      // Invertimos la dirección porque estamos tirando desde la izquierda
+      const newWidth = startWidth + (startX - e.clientX);
+      const constrainedWidth = Math.min(Math.max(newWidth, 300), 800);
+
+      sidebarRef.current.style.width = `${constrainedWidth}px`;
+      widthRef.current = constrainedWidth;
+    };
+
+    const stopResizing = () => {
+      document.body.style.cursor = "";
+      document.body.style.userSelect = "";
+      document.removeEventListener("mousemove", resize);
+      document.removeEventListener("mouseup", stopResizing);
+    };
+
+    document.addEventListener("mousemove", resize);
+    document.addEventListener("mouseup", stopResizing);
+  };
 
   useEffect(() => {
     setCurrentTask(task);
   }, [task]);
 
-  const handleEditTask = async (e: FormEvent) => {
+  const handleEditTask = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!currentTask) return;
     setIsSaving(true);
 
-    const updatedTask: Task = {
-      ...currentTask,
-      title: currentTask.title.trim(),
-      description: currentTask.description?.trim() || undefined,
-      due_date: currentTask.due_date || undefined,
-      list_id: currentTask.list_id,
-    };
-    updateTask(updatedTask);
-    countedTask(currentTask.list_id!);
-    toast.success("Task updated successfully");
-    setIsSaving(false);
+    try {
+      const updatedTask: Task = {
+        ...currentTask,
+        title: currentTask.title.trim(),
+        description: currentTask.description?.trim() || undefined,
+        due_date: currentTask.due_date || undefined,
+        list_id: currentTask.list_id,
+      };
+
+      updateTask(updatedTask);
+      if (currentTask.list_id) countedTask(currentTask.list_id);
+      toast.success("Task updated successfully");
+    } catch (error) {
+      toast.error("Failed to update task");
+      console.error(error);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
-  const handleRemoveTask = async (e: FormEvent) => {
+  const handleRemoveTask = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!task?.id) return;
     removeTask(task.id);
-    if (task.list_id) {
-      countedTask(task.list_id);
-    }
+    if (task.list_id) countedTask(task.list_id);
     toast.success("Task removed successfully");
-    setCurrentTask(undefined);
+    closeTask();
   };
 
   const handleDateChange = (date: Date | undefined) => {
     setCurrentTask((prev) =>
-      prev
-        ? { ...prev, due_date: date ? date.toISOString() : undefined }
-        : undefined,
+      prev ? { ...prev, due_date: date?.toISOString() } : undefined,
     );
   };
 
@@ -76,140 +113,128 @@ export function TaskDetails({ className, task }: TaskDetailsProps) {
     });
   };
 
-  const handleNameChange = (value: string) => {
-    setCurrentTask((prev) => (prev ? { ...prev, title: value } : undefined));
-  };
+  useEffect(() => {
+    setCurrentTask(task);
 
-  const handleDescriptionChange = (value: string) => {
-    setCurrentTask((prev) =>
-      prev ? { ...prev, description: value } : undefined,
-    );
-  };
-
-  if (!currentTask) {
-    return (
-      <div
-        className={cn(
-          "flex flex-col justify-center  items-center h-full max-h-[100vh] overflow-y-auto text-muted-foreground",
-          className,
-        )}
-      >
-        <Scan size={48} className="mb-4 opacity-50" />
-        <p className="text-lg">No task selected</p>
-        <p className="text-sm">Select a task to view or edit details</p>
-      </div>
-    );
-  }
+    if (task && sidebarRef.current) {
+      sidebarRef.current.style.width = `${widthRef.current}px`;
+    }
+  }, [task]);
 
   return (
-    <div className={cn("w-full border-l  flex flex-col ", className)}>
-      {/* Content */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-6">
-        {/* Task Name */}
-        <div>
-          <label
-            htmlFor="task-name"
-            className="block text-sm font-medium text-gray-700 mb-1"
-          >
-            Task Name
-          </label>
-          <input
-            id="task-name"
-            className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
-            value={currentTask.title}
-            onChange={(e) => handleNameChange(e.target.value)}
-            placeholder="Enter task name"
-          />
-        </div>
+    <aside
+      ref={sidebarRef}
+      className={cn(
+        "border-l bg-white dark:bg-zinc-900 fixed md:static right-0 top-0 h-screen z-30 transition-all duration-300",
+        task ? "" : "w-0 overflow-hidden",
+        className,
+      )}
+      style={{ width: task ? `${widthRef.current}px` : "0" }}
+    >
+      {task && (
+        <div className="flex flex-col h-full relative">
+          <div
+            className="absolute left-0 top-0 bottom-0 w-2 cursor-col-resize hover:bg-primary/30 z-10"
+            onMouseDown={startResizing}
+          ></div>
 
-        {/* Description */}
-        <div>
-          <label
-            htmlFor="task-description"
-            className="block text-sm font-medium text-gray-700 mb-1"
-          >
-            Description
-          </label>
-          <textarea
-            id="task-description"
-            className="w-full border rounded px-3 py-2 h-32 focus:outline-none focus:ring-2 focus:ring-primary"
-            value={currentTask.description || ""}
-            onChange={(e) => handleDescriptionChange(e.target.value)}
-            placeholder="Enter task description"
-          />
-        </div>
-
-        {/* List Selection */}
-        <div>
-          <label
-            htmlFor="task-list"
-            className="block text-sm font-medium text-gray-700 mb-1"
-          >
-            List
-          </label>
-          <select
-            id="task-list"
-            value={currentTask.list_id || ""}
-            onChange={handleListChange}
-            className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
-          >
-            {lists.map((list) => (
-              <option key={list.id} value={list.id}>
-                {list.title}
-              </option>
-            ))}
-          </select>
-        </div>
-        {/* Due Date */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Due Date
-          </label>
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button
-                variant="outline"
-                className="w-full justify-start text-left font-normal"
-              >
-                {currentTask.due_date ? (
-                  format(new Date(currentTask.due_date), "PPP")
-                ) : (
-                  <span>Select a date</span>
-                )}
-                <ChevronDown className="ml-auto h-4 w-4 opacity-50" />
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0">
-              <CalendarDemo
-                selectedDate={
-                  currentTask.due_date
-                    ? new Date(currentTask.due_date)
-                    : undefined
+          <div className="flex flex-col h-full pl-1">
+            <div className="flex justify-between items-center p-4 border-b">
+              <input
+                type="text"
+                value={currentTask?.title || ""}
+                onChange={(e) =>
+                  setCurrentTask((prev) =>
+                    prev ? { ...prev, title: e.target.value } : undefined,
+                  )
                 }
-                onDataChange={handleDateChange}
+                placeholder="Task name"
+                className="text-lg font-semibold w-full bg-transparent outline-none border-none focus:ring-0 border-b border-transparent focus:border-primary transition-all"
               />
-            </PopoverContent>
-          </Popover>
-        </div>
+              <Button variant="ghost" size="icon" onClick={closeTask}>
+                <X className="w-5 h-5" />
+              </Button>
+            </div>
 
-        {/* Footer Actions */}
-        <div className="p-4 border-t space-y-2">
-          <Button
-            onClick={handleEditTask}
-            className="w-full"
-            disabled={isSaving || !currentTask.title.trim()}
-          >
-            {isSaving ? "Saving..." : "Save Changes"}
-          </Button>
-          <Button
-            onClick={handleRemoveTask}
-            variant="destructive"
-            className="w-full"
-          >
-            Delete Task
-          </Button>
+            <form
+              onSubmit={handleEditTask}
+              className="flex-1 overflow-y-auto px-4 py-6 space-y-6"
+            >
+              <textarea
+                className="w-full bg-transparent outline-none resize-none min-h-[200px] text-sm placeholder:text-muted-foreground border-muted-foreground focus:border-primary transition-all"
+                value={currentTask?.description || ""}
+                onChange={(e) =>
+                  setCurrentTask((prev) =>
+                    prev ? { ...prev, description: e.target.value } : undefined,
+                  )
+                }
+                placeholder="Write something about this task..."
+              />
+
+              <div>
+                <label className="block text-sm font-medium mb-1">List</label>
+                <select
+                  value={currentTask?.list_id || ""}
+                  onChange={handleListChange}
+                  className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
+                >
+                  {lists.map((list) => (
+                    <option key={list.id} value={list.id}>
+                      {list.title}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  Due Date
+                </label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className="w-full justify-start text-left font-normal"
+                    >
+                      {currentTask?.due_date ? (
+                        format(new Date(currentTask.due_date), "PPP")
+                      ) : (
+                        <span>Select a date</span>
+                      )}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0">
+                    <CalendarDemo
+                      selectedDate={
+                        currentTask?.due_date
+                          ? new Date(currentTask.due_date)
+                          : undefined
+                      }
+                      onDataChange={handleDateChange}
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+            </form>
+            <div className="p-4 border-t space-y-2">
+              <Button
+                onClick={handleEditTask}
+                className="w-full"
+                disabled={isSaving || !currentTask?.title.trim()}
+              >
+                {isSaving ? "Saving..." : "Save Changes"}
+              </Button>
+              <Button
+                onClick={handleRemoveTask}
+                variant="destructive"
+                className="w-full"
+              >
+                Delete Task
+              </Button>
+            </div>
+          </div>
         </div>
-      </div>
-    </div>
+      )}
+    </aside>
   );
 }
