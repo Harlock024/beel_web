@@ -24,9 +24,8 @@ export function TaskDetails({ className }: TaskDetailsProps) {
   const [currentTask, setCurrentTask] = useState<Task | undefined>(task);
   const [isSaving, setIsSaving] = useState(false);
   const sidebarRef = useRef<HTMLDivElement>(null);
-  const widthRef = useRef(400); // Ancho inicial
+  const widthRef = useRef(400);
 
-  // Función para manejar el redimensionamiento directamente en el componente
   const startResizing = (e: React.MouseEvent) => {
     e.preventDefault();
 
@@ -39,13 +38,13 @@ export function TaskDetails({ className }: TaskDetailsProps) {
     const resize = (e: MouseEvent) => {
       if (!sidebarRef.current) return;
 
-      // Nuevo ancho = ancho inicial + (posición inicial - posición actual)
-      // Invertimos la dirección porque estamos tirando desde la izquierda
-      const newWidth = startWidth + (startX - e.clientX);
-      const constrainedWidth = Math.min(Math.max(newWidth, 300), 800);
+      const newWidth = Math.min(
+        Math.max(startWidth + (startX - e.clientX), 300),
+        800,
+      );
 
-      sidebarRef.current.style.width = `${constrainedWidth}px`;
-      widthRef.current = constrainedWidth;
+      sidebarRef.current.style.width = `${newWidth}px`;
+      widthRef.current = newWidth;
     };
 
     const stopResizing = () => {
@@ -61,26 +60,30 @@ export function TaskDetails({ className }: TaskDetailsProps) {
 
   useEffect(() => {
     setCurrentTask(task);
+
+    if (task && sidebarRef.current) {
+      sidebarRef.current.style.width = `${widthRef.current}px`;
+    }
   }, [task]);
 
-  const handleEditTask = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleEditTask = async () => {
     if (!currentTask) return;
+
     setIsSaving(true);
 
     try {
       const changes: Partial<Task> = {};
-
       const trimmedTitle = currentTask.title.trim();
+      const trimmedDescription = currentTask.description?.trim() || undefined;
+
       if (trimmedTitle !== task?.title) {
         if (!trimmedTitle) {
-          toast.error("Title cannot be empty", { duration: 3000 });
+          toast.error("Title cannot be empty");
           return;
         }
         changes.title = trimmedTitle;
       }
 
-      const trimmedDescription = currentTask.description?.trim() || undefined;
       if (trimmedDescription !== task?.description) {
         changes.description = trimmedDescription;
       }
@@ -95,31 +98,24 @@ export function TaskDetails({ className }: TaskDetailsProps) {
       }
 
       if (Object.keys(changes).length === 0) {
-        toast.success("No changes to save", { duration: 3000 });
         return;
       }
-
-      const updatedTask: Partial<Task> = {
-        ...changes,
-      };
-      updateTask(updatedTask, currentTask.id || "");
+      updateTask(changes, currentTask.id || "");
       if (currentTask.list_id) countedTask(currentTask.list_id);
-      toast.success("Task updated successfully", { duration: 3000 });
     } catch (error) {
-      toast.error("Failed to update task. Please try again.", {
-        duration: 4000,
-      });
+      toast.error("Failed to update task. Please try again.");
       console.error(error);
     } finally {
       setIsSaving(false);
     }
   };
 
-  const handleRemoveTask = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleRemoveTask = async () => {
     if (!task?.id) return;
+
     removeTask(task.id);
     if (task.list_id) countedTask(task.list_id);
+
     toast.success("Task removed successfully");
     closeTask();
   };
@@ -141,30 +137,38 @@ export function TaskDetails({ className }: TaskDetailsProps) {
   };
 
   useEffect(() => {
-    setCurrentTask(task);
+    const handleKeyboardSave = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === "s") {
+        e.preventDefault();
+        if (!isSaving && currentTask?.title.trim()) {
+          handleEditTask();
+        }
+      }
+    };
 
-    if (task && sidebarRef.current) {
-      sidebarRef.current.style.width = `${widthRef.current}px`;
-    }
-  }, [task]);
+    window.addEventListener("keydown", handleKeyboardSave);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyboardSave);
+    };
+  }, [currentTask, isSaving]);
 
   return (
-    <aside
-      ref={sidebarRef}
-      className={cn(
-        "border-l bg-white dark:bg-zinc-900 fixed md:static right-0 top-0 h-screen z-30 transition-all duration-300",
-        task ? "" : "w-0 overflow-hidden",
-        className,
-      )}
-      style={{ width: task ? `${widthRef.current}px` : "0" }}
-    >
+    <div>
       {task && (
-        <div className="flex flex-col h-full relative">
+        <div
+          ref={sidebarRef}
+          className={cn(
+            "fixed right-0 top-0 h-screen z-50 bg-white dark:bg-zinc-900 shadow-lg border-l transition-transform duration-300",
+            task ? "translate-x-0" : "translate-x-full",
+            className,
+          )}
+          style={{ width: `${widthRef.current}px` }}
+        >
           <div
             className="absolute left-0 top-0 bottom-0 w-2 cursor-col-resize hover:bg-primary/30 z-10"
             onMouseDown={startResizing}
           ></div>
-
           <div className="flex flex-col h-full pl-1">
             <div className="flex justify-between items-center p-4 border-b">
               <input
@@ -182,9 +186,11 @@ export function TaskDetails({ className }: TaskDetailsProps) {
                 <X className="w-5 h-5" />
               </Button>
             </div>
-
             <form
-              onSubmit={handleEditTask}
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleEditTask();
+              }}
               className="flex-1 overflow-y-auto px-4 py-6 space-y-6"
             >
               <textarea
@@ -197,7 +203,6 @@ export function TaskDetails({ className }: TaskDetailsProps) {
                 }
                 placeholder="Write something about this task..."
               />
-
               <div>
                 <label className="block text-sm font-medium mb-1">List</label>
                 <select
@@ -212,7 +217,6 @@ export function TaskDetails({ className }: TaskDetailsProps) {
                   ))}
                 </select>
               </div>
-
               <div>
                 <label className="block text-sm font-medium mb-1">
                   Due Date
@@ -262,6 +266,6 @@ export function TaskDetails({ className }: TaskDetailsProps) {
           </div>
         </div>
       )}
-    </aside>
+    </div>
   );
 }
