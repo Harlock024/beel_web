@@ -1,5 +1,4 @@
 import { List } from "@/types/list";
-import { Label } from "../ui/label";
 import { useListStore } from "@/stores/list_store";
 import {
   ContextMenu,
@@ -8,28 +7,26 @@ import {
   ContextMenuTrigger,
 } from "../ui/context-menu";
 import { FormEvent, useState } from "react";
-import { ModalEditTaskForm } from "./modal_list_form";
-import { Separator } from "@radix-ui/react-select";
-import { prefetch } from "astro:prefetch";
+import { ListForm } from "./list_form";
 
 export function ListCard({ list }: { list: List }) {
   const [isEditingList, setIsEditingList] = useState(false);
-  const [isDeletingList, setIsDeletingList] = useState(false);
-  const { deleteList, updateList, setSelectedList, selectedListId } =
-    useListStore();
+  const { deleteList, setSelectedList, selectedListId } = useListStore();
 
-  function handleListClick(e: FormEvent) {
+  function handleListClick(e: FormEvent<HTMLAnchorElement>) {
+    e.defaultPrevented;
     setSelectedList(list.id!);
   }
 
   const handleEditList = () => {
-    setIsEditingList(true);
+    setIsEditingList(!isEditingList);
   };
 
   const handleDeleteList = () => {
-    setIsDeletingList(true);
     deleteList(list.id!);
   };
+
+  const isSelected = selectedListId === list.id;
 
   return (
     <>
@@ -37,25 +34,26 @@ export function ListCard({ list }: { list: List }) {
         <ContextMenuTrigger>
           <a
             href={`/list/${list.id}`}
-            key={list.id}
             onClick={handleListClick}
-            className={`w-full flex items-center gap-2 text-sm px-3 py-2 rounded transition-colors
-        ${
-          selectedListId === list.id
-            ? "bg-black text-white"
-            : "text-gray-700 hover:bg-gray-100"
-        }`}
+            className={[
+              "w-full flex items-center gap-3 px-4 py-3 rounded-md transition-all truncate ",
+              isSelected ? "bg-gray-200 " : "hover:bg-gray-200 ",
+              "text-gray-700",
+            ].join(" ")}
+            title={list.title}
           >
             <div
-              className="size-2 rounded-full"
+              className="w-4 h-4 rounded-full border border-gray-300"
               style={{ backgroundColor: list.color }}
+              title={`Color: ${list.color}`}
             ></div>
-            <span className="truncate">{list.title}</span>
+
+            <span className="flex-1 truncate font-medium">{list.title}</span>
           </a>
         </ContextMenuTrigger>
+
         <ContextMenuContent>
           <ContextMenuItem onClick={handleEditList}>Edit List</ContextMenuItem>
-
           <ContextMenuItem onClick={handleDeleteList}>
             Delete List
           </ContextMenuItem>
@@ -63,9 +61,10 @@ export function ListCard({ list }: { list: List }) {
       </ContextMenu>
 
       {isEditingList && (
-        <ModalEditTaskForm
+        <ListForm
           list={list}
-          onClose={() => setIsEditingList(false)}
+          onComplete={handleEditList}
+          isOpen={isEditingList}
         />
       )}
     </>

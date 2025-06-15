@@ -1,9 +1,9 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { SidebarList } from "./sidebar_list";
-import { AvatarAction } from "../user/avatar_action";
 import { useAuthStore } from "@/stores/useAuthStore";
 import { Home, PanelRight } from "lucide-react";
 import { useSidebarStore } from "@/stores/sidebarStore";
+import { SidebarActions } from "./sidebar_actions";
 
 export default function Sidebar() {
   const { user } = useAuthStore();
@@ -23,7 +23,7 @@ export default function Sidebar() {
     <>
       <aside
         className={`transition-all duration-300 ease-in-out border-r bg-white fixed md:static top-0 left-0 h-screen z-40
-        ${isOpen ? "w-[248px]" : "w-0 overflow-hidden"}`}
+        ${isOpen ? "w-[256px]" : "w-0 overflow-hidden"}`}
       >
         <div className="h-full px-6 py-4 flex flex-col justify-between">
           <div>
@@ -48,7 +48,7 @@ export default function Sidebar() {
             </nav>
           </div>
           {user ? (
-            <AvatarAction />
+            <SidebarActions />
           ) : (
             <div className="text-center text-gray-500">
               Please log in to access your account.

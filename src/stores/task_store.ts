@@ -17,7 +17,7 @@ type TaskState = {
   closeTask: () => void;
   addTask: (newTask: Task) => void;
   removeTask: (id: string) => void;
-  updateTask: (updatedTask: Task) => void;
+  updateTask: (updatedTask: Partial<Task>, task_id: string) => void;
 };
 
 export const useTaskStore = create<TaskState>((set) => ({
@@ -65,15 +65,14 @@ export const useTaskStore = create<TaskState>((set) => ({
     const task = useTaskStore.getState().tasks.find((task) => task.id === id);
     set({ task });
   },
-  updateTask: async (updatedTask: Task) => {
+  updateTask: async (updatedTask: Partial<Task>, task_id: string) => {
     set((state) => ({
       tasks: state.tasks.map((task) =>
-        task.id === updatedTask.id ? updatedTask : task,
+        task.id === updatedTask.id ? { ...task, ...updatedTask } : task,
       ),
     }));
-
     try {
-      const taskRes = await UpdateTask(updatedTask);
+      const taskRes = await UpdateTask(updatedTask, task_id);
       if (taskRes) {
         toast.success("task updated");
       }
