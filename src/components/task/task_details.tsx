@@ -27,6 +27,7 @@ export function TaskDetails({ className }: TaskDetailsProps) {
   const sidebarRef = useRef<HTMLDivElement>(null);
   const widthRef = useRef(400);
 
+
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
@@ -50,6 +51,7 @@ export function TaskDetails({ className }: TaskDetailsProps) {
     currentTask?.list_id,
     task, 
   ]);
+
 
   const startResizing = (e: React.MouseEvent) => {
     e.preventDefault();
