@@ -69,19 +69,46 @@ export function TaskDetails({ className }: TaskDetailsProps) {
     setIsSaving(true);
 
     try {
-      const updatedTask: Task = {
-        ...currentTask,
-        title: currentTask.title.trim(),
-        description: currentTask.description?.trim() || undefined,
-        due_date: currentTask.due_date || undefined,
-        list_id: currentTask.list_id,
-      };
+      const changes: Partial<Task> = {};
 
-      updateTask(updatedTask);
+      const trimmedTitle = currentTask.title.trim();
+      if (trimmedTitle !== task?.title) {
+        if (!trimmedTitle) {
+          toast.error("Title cannot be empty", { duration: 3000 });
+          return;
+        }
+        changes.title = trimmedTitle;
+      }
+
+      const trimmedDescription = currentTask.description?.trim() || undefined;
+      if (trimmedDescription !== task?.description) {
+        changes.description = trimmedDescription;
+      }
+
+      const dueDate = currentTask.due_date || undefined;
+      if (dueDate !== task?.due_date) {
+        changes.due_date = dueDate;
+      }
+
+      if (currentTask.list_id !== task?.list_id) {
+        changes.list_id = currentTask.list_id;
+      }
+
+      if (Object.keys(changes).length === 0) {
+        toast.success("No changes to save", { duration: 3000 });
+        return;
+      }
+
+      const updatedTask: Partial<Task> = {
+        ...changes,
+      };
+      updateTask(updatedTask, currentTask.id || "");
       if (currentTask.list_id) countedTask(currentTask.list_id);
-      toast.success("Task updated successfully");
+      toast.success("Task updated successfully", { duration: 3000 });
     } catch (error) {
-      toast.error("Failed to update task");
+      toast.error("Failed to update task. Please try again.", {
+        duration: 4000,
+      });
       console.error(error);
     } finally {
       setIsSaving(false);

@@ -71,19 +71,21 @@ export async function CreateTask({
   }
 }
 
-export async function UpdateTask(task: Task): Promise<Task> {
+export async function UpdateTask(
+  task: Partial<Task>,
+  task_id: string,
+): Promise<Task> {
   const accessToken = useAuthStore.getState().accessToken;
 
   try {
-    const response = await fetch(API_URL + "/api/tasks/" + task.id, {
-      method: "PUT",
+    const response = await fetch(API_URL + "/api/tasks/" + task_id, {
+      method: "PATCH",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${accessToken}`,
       },
       body: JSON.stringify(task),
     });
-
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }

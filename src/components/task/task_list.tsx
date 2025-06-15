@@ -1,6 +1,5 @@
 import { useTaskStore } from "@/stores/task_store";
 import { TaskCard } from "./task_card";
-import { useListStore } from "@/stores/list_store";
 import { useEffect } from "react";
 
 export function TaskList({ list_id }: { list_id: string }) {
