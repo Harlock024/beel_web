@@ -35,6 +35,12 @@ export const useTaskStore = create<TaskState>((set, get) => ({
     if (list_id && !listFetched.has(list_id)) {
       const response = await FetchTasks({ list_id });
 
+      if (response.tasks.length === 0) {
+        set({
+          tasks: new Map(),
+          listFetched: new Set(listFetched).add(list_id),
+        });
+      }
       for (const task of response.tasks) {
         newTasks.set(task.id!, task);
       }
