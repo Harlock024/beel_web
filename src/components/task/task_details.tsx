@@ -20,7 +20,7 @@ type TaskDetailsProps = {
 
 export function TaskDetails({ className }: TaskDetailsProps) {
   const { updateTask, removeTask, closeTask, task } = useTaskStore();
-  const { lists, countedTask } = useListStore();
+  const { lists } = useListStore();
   const [currentTask, setCurrentTask] = useState<Task | undefined>(task);
   const [isSaving, setIsSaving] = useState(false);
   const sidebarRef = useRef<HTMLDivElement>(null);
@@ -101,7 +101,7 @@ export function TaskDetails({ className }: TaskDetailsProps) {
         return;
       }
       updateTask(changes, currentTask.id || "");
-      if (currentTask.list_id) countedTask(currentTask.list_id);
+      // if (currentTask.list_id) countedTask(currentTask.list_id);
     } catch (error) {
       toast.error("Failed to update task. Please try again.");
       console.error(error);
@@ -114,9 +114,10 @@ export function TaskDetails({ className }: TaskDetailsProps) {
     if (!task?.id) return;
 
     removeTask(task.id);
-    if (task.list_id) countedTask(task.list_id);
+    if (task.list_id)
+      //countedTask(task.list_id);
 
-    toast.success("Task removed successfully");
+      toast.success("Task removed successfully");
     closeTask();
   };
 
@@ -130,8 +131,8 @@ export function TaskDetails({ className }: TaskDetailsProps) {
     const newListId = e.target.value;
     setCurrentTask((prev) => {
       if (!prev) return undefined;
-      if (prev.list_id) countedTask(prev.list_id);
-      countedTask(newListId);
+      // if (prev.list_id) countedTask(prev.list_id);
+      // countedTask(newListId);
       return { ...prev, list_id: newListId };
     });
   };
