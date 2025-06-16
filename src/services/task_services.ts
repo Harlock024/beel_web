@@ -35,6 +35,29 @@ export async function FetchTasks({
   }
 }
 
+export async function FetchTasksByFilter(
+  filter: String,
+): Promise<TaskResponse> {
+  const accessToken = useAuthStore.getState().accessToken;
+  try {
+    const response = await fetch(`${API_URL}/api/tasks?filter=${filter}`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
+      },
+    });
+    console.log("response filter", filter);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    const data: TaskResponse = await response.json();
+    return data;
+  } catch (error) {
+    throw error;
+  }
+}
+
 export async function CreateTask({
   title,
   list_id,

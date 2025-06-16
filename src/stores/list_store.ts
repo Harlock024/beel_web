@@ -18,7 +18,7 @@ type Store = {
   createList: (title: string, color: string) => void;
   updateList: (updatedList: Partial<List>) => void;
   deleteList: (id: string) => void;
-  countedTask: (listId: string) => void;
+  // countedTask: (listId: string) => void;
 };
 
 export const useListStore = create<Store>((set, get) => ({
@@ -53,15 +53,15 @@ export const useListStore = create<Store>((set, get) => ({
       selectedListId: state.selectedListId === id ? null : state.selectedListId,
     }));
   },
-  countedTask: (listId: string) => {
-    const taskList = useTaskStore.getState().tasks;
-    const taskCount = taskList.filter((task) => task.list_id === listId);
-    set((state) => ({
-      lists: state.lists.map((list) =>
-        list.id === listId
-          ? { ...list, numTaskAsigned: taskCount.length }
-          : list,
-      ),
-    }));
-  },
+  // countedTask: (listId: string) => {
+  //   const taskList = useTaskStore.getState().tasks;
+  //   const taskCount = taskList.filter((task) => task.list_id === listId);
+  //   set((state) => ({
+  //     lists: state.lists.map((list) =>
+  //       list.id === listId
+  //         ? { ...list, numTaskAsigned: taskCount.length }
+  //         : list,
+  //     ),
+  //   }));
+  // },
 }));

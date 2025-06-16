@@ -4,6 +4,7 @@ import { useAuthStore } from "@/stores/useAuthStore";
 import { Home, PanelRight } from "lucide-react";
 import { useSidebarStore } from "@/stores/sidebarStore";
 import { SidebarActions } from "./sidebar_actions";
+import { SidebarTask } from "./sidebar_task";
 
 export default function Sidebar() {
   const { user } = useAuthStore();
@@ -44,6 +45,7 @@ export default function Sidebar() {
                 <Home />
                 Home
               </a>
+              <SidebarTask />
               <SidebarList />
             </nav>
           </div>

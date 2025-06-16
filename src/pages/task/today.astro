@@ -1,0 +1,10 @@
+---
+import { TaskForm } from "@/components/task/task_form";
+import { TaskList } from "@/components/task/task_list";
+import Layout from "@/layouts/Layout.astro";
+---
+
+<Layout>
+    <TaskForm client:load />
+    <TaskList filter={"today"} client:load />
+</Layout>

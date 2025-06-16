@@ -33,7 +33,6 @@ export function TaskCard({ task }: { task: Task }) {
     e.preventDefault();
     setDoneTask(!doneTask);
   };
-
   return (
     <div className="w-full flex  justify-center items-center">
       <Checkbox
