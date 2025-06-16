@@ -101,7 +101,6 @@ export function TaskDetails({ className }: TaskDetailsProps) {
         return;
       }
       updateTask(changes, currentTask.id || "");
-      // if (currentTask.list_id) countedTask(currentTask.list_id);
     } catch (error) {
       toast.error("Failed to update task. Please try again.");
       console.error(error);
@@ -114,10 +113,7 @@ export function TaskDetails({ className }: TaskDetailsProps) {
     if (!task?.id) return;
 
     removeTask(task.id);
-    if (task.list_id)
-      //countedTask(task.list_id);
-
-      toast.success("Task removed successfully");
+    if (task.list_id) toast.success("Task removed successfully");
     closeTask();
   };
 
@@ -131,12 +127,9 @@ export function TaskDetails({ className }: TaskDetailsProps) {
     const newListId = e.target.value;
     setCurrentTask((prev) => {
       if (!prev) return undefined;
-      // if (prev.list_id) countedTask(prev.list_id);
-      // countedTask(newListId);
       return { ...prev, list_id: newListId };
     });
   };
-
   useEffect(() => {
     const handleKeyboardSave = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.key === "s") {
@@ -146,13 +139,28 @@ export function TaskDetails({ className }: TaskDetailsProps) {
         }
       }
     };
-
     window.addEventListener("keydown", handleKeyboardSave);
-
     return () => {
       window.removeEventListener("keydown", handleKeyboardSave);
     };
   }, [currentTask, isSaving]);
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        sidebarRef.current &&
+        !sidebarRef.current.contains(event.target as Node)
+      ) {
+        closeTask();
+      }
+    };
+    if (task) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [task]);
 
   return (
     <div>
