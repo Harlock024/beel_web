@@ -5,7 +5,7 @@ import { persist } from "zustand/middleware";
 
 type AuthState = {
   user: User | null;
-  accessToken: string | null;
+
   refreshToken: string | null;
   isLoading: boolean;
   register: (
@@ -27,14 +27,13 @@ export const useAuthStore = create<AuthState>()(
       isLoading: false,
       register: async (username: string, email: string, password: string) => {
         try {
-          const { user, access_token, refresh_token } = await register(
+          const { user, refresh_token } = await register(
             username,
             email,
             password,
           );
           set({
             user,
-            accessToken: access_token,
             refreshToken: refresh_token,
           });
         } catch (error) {
@@ -43,13 +42,10 @@ export const useAuthStore = create<AuthState>()(
       },
       login: async (email: string, password: string) => {
         try {
-          const { user, access_token, refresh_token } = await login(
-            email,
-            password,
-          );
+          const { user, refresh_token } = await login(email, password);
           set({
             user,
-            accessToken: access_token,
+
             refreshToken: refresh_token,
           });
         } catch (error) {
@@ -57,22 +53,15 @@ export const useAuthStore = create<AuthState>()(
         }
       },
       logout: () => {
-        set({ user: null, accessToken: null, refreshToken: null });
+        set({ user: null, refreshToken: null });
+        localStorage.clear();
       },
       refresh: async () => {
         const { refreshToken } = get();
         if (!refreshToken) return;
-
         try {
-          const res = await fetch("/api/auth/refresh", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ refreshToken }),
-          });
-          if (!res.ok) throw new Error("Refresh failed");
-
-          const { accessToken } = await res.json();
-          set({ accessToken });
+          // const { accessToken } = await res.json();
+          // set({ accessToken });
         } catch (error) {
           console.error(error);
           get().logout();

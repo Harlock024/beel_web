@@ -1,26 +1,20 @@
 import { API_URL } from "./api_url";
 import { Task, TaskResponse } from "../types/task";
-import { useAuthStore } from "@/stores/useAuthStore";
 
 export async function FetchTasks({
   list_id,
 }: {
   list_id: string | null;
 }): Promise<TaskResponse> {
-  const accessToken = useAuthStore.getState().accessToken;
-
-  if (!accessToken) {
-    throw new Error("No access token found");
-  }
   if (!list_id) {
     throw new Error("no list selected");
   }
   try {
     const response = await fetch(`${API_URL}/api/lists/${list_id}/tasks`, {
       method: "GET",
+      credentials: "include",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${accessToken}`,
       },
     });
 
@@ -38,12 +32,11 @@ export async function FetchTasks({
 export async function FetchTasksByFilter(
   filter: String,
 ): Promise<TaskResponse> {
-  const accessToken = useAuthStore.getState().accessToken;
   try {
     const response = await fetch(`${API_URL}/api/tasks?filter=${filter}`, {
       method: "GET",
+      credentials: "include",
       headers: {
-        Authorization: `Bearer ${accessToken}`,
         "Content-Type": "application/json",
       },
     });
@@ -65,19 +58,13 @@ export async function CreateTask({
   title: string;
   list_id?: string;
 }): Promise<Task> {
-  const accessToken = useAuthStore.getState().accessToken;
-
   console.log(title, list_id);
-
-  if (!accessToken) {
-    throw new Error("No access token found");
-  }
 
   try {
     const response = await fetch(`${API_URL}/api/lists/${list_id}/tasks`, {
       method: "POST",
+      credentials: "include",
       headers: {
-        Authorization: `Bearer ${accessToken}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
@@ -98,14 +85,12 @@ export async function UpdateTask(
   task: Partial<Task>,
   task_id: string,
 ): Promise<Task> {
-  const accessToken = useAuthStore.getState().accessToken;
-
   try {
     const response = await fetch(API_URL + "/api/tasks/" + task_id, {
       method: "PATCH",
+      credentials: "include",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${accessToken}`,
       },
       body: JSON.stringify(task),
     });
@@ -121,13 +106,11 @@ export async function UpdateTask(
 }
 
 export async function DeleteTask(taskId: string): Promise<boolean> {
-  const accessToken = useAuthStore.getState().accessToken;
-
   const response = await fetch(API_URL + "/api/tasks/" + taskId, {
     method: "DELETE",
+    credentials: "include",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${accessToken}`,
     },
   });
 

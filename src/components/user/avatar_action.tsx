@@ -14,7 +14,7 @@ import { LogOut, Settings, UserCircle } from "lucide-react";
 import { useAuthStore } from "@/stores/useAuthStore";
 
 export function AvatarAction() {
-  const { user } = useAuthStore();
+  const { user, logout } = useAuthStore();
   return user ? (
     <DropdownMenu>
       <DropdownMenuTrigger
@@ -44,7 +44,7 @@ export function AvatarAction() {
           </DropdownMenuItem>
 
           <DropdownMenuItem>
-            <a className="flex" href="/login">
+            <a onClick={logout} className="flex" href="/login">
               <LogOut className="mr-2 h-4 w-4" />
               Logout
             </a>

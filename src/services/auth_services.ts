@@ -3,7 +3,6 @@ import { API_URL } from "./api_url";
 
 export type LoginResponse = {
   user: User;
-  access_token: string;
   refresh_token: string;
 };
 
@@ -17,6 +16,7 @@ export async function login(
       headers: {
         "Content-Type": "application/json",
       },
+      credentials: "include",
       body: JSON.stringify({ email, password }),
     });
 
@@ -82,6 +82,7 @@ export async function register(
       headers: {
         "Content-Type": "application/json",
       },
+      credentials: "include",
       body: JSON.stringify({ username, email, password }),
     });
 

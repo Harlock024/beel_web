@@ -14,7 +14,6 @@ export function Header() {
           <PanelRight />
         </button>
       </div>
-
       <AvatarAction />
     </header>
   );

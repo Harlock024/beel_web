@@ -3,16 +3,11 @@ import { API_URL } from "./api_url";
 import { useAuthStore } from "@/stores/useAuthStore";
 
 export async function FetchLists(): Promise<ListsResponseProp> {
-  const accessToken = useAuthStore.getState().accessToken;
-
-  if (!accessToken) {
-    throw new Error("No access token found");
-  }
-
   try {
     const response = await fetch(`${API_URL}/api/lists`, {
+      method: "GET",
+      credentials: "include",
       headers: {
-        Authorization: `Bearer ${accessToken}`,
         "Content-Type": "application/json",
       },
     });
@@ -26,17 +21,11 @@ export async function FetchLists(): Promise<ListsResponseProp> {
 }
 
 export async function CreateList(title: string, color: string): Promise<List> {
-  const accessToken = useAuthStore.getState().accessToken;
-
-  if (!accessToken) {
-    throw new Error("No access token found");
-  }
-
   try {
     const response = await fetch(`${API_URL}/api/lists`, {
       method: "POST",
+      credentials: "include",
       headers: {
-        Authorization: `Bearer ${accessToken}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({ title, color }),
@@ -51,17 +40,11 @@ export async function CreateList(title: string, color: string): Promise<List> {
 export async function UpdateList(
   list: Partial<List>,
 ): Promise<ListsResponseProp> {
-  const accessToken = useAuthStore.getState().accessToken;
-
-  if (!accessToken) {
-    throw new Error("No access token found");
-  }
-
   try {
     const response = await fetch(`${API_URL}/api/lists/${list.id}`, {
       method: "PUT",
+      credentials: "include",
       headers: {
-        Authorization: `Bearer ${accessToken}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({ title: list.title, color: list.color }),
@@ -75,17 +58,11 @@ export async function UpdateList(
 }
 
 export async function DeleteList(id: string): Promise<void> {
-  const accessToken = useAuthStore.getState().accessToken;
-
-  if (!accessToken) {
-    throw new Error("No access token found");
-  }
-
   try {
     const response = await fetch(`${API_URL}/api/lists/${id}`, {
       method: "DELETE",
+      credentials: "include",
       headers: {
-        Authorization: `Bearer ${accessToken}`,
         "Content-Type": "application/json",
       },
     });
