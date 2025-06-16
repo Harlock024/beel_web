@@ -6,6 +6,7 @@ import { Button } from "../ui/button";
 import { format } from "date-fns";
 import { CalendarDemo } from "../calendar/CalentadarDemo";
 import { useListStore } from "@/stores/list_store";
+
 import {
   Popover,
   PopoverContent,
@@ -144,15 +145,23 @@ export function TaskDetails({ className }: TaskDetailsProps) {
       window.removeEventListener("keydown", handleKeyboardSave);
     };
   }, [currentTask, isSaving]);
+
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (
-        sidebarRef.current &&
-        !sidebarRef.current.contains(event.target as Node)
-      ) {
+      if (!sidebarRef.current) return;
+
+      const target = event.target as HTMLElement;
+
+      const isClickInsideSidebar = sidebarRef.current.contains(target);
+      const isRadixPortal = target.closest(
+        "[data-radix-popper-content-wrapper]",
+      );
+
+      if (!isClickInsideSidebar && !isRadixPortal) {
         closeTask();
       }
     };
+
     if (task) {
       document.addEventListener("mousedown", handleClickOutside);
     }

@@ -123,13 +123,17 @@ export async function UpdateTask(
 export async function DeleteTask(taskId: string): Promise<boolean> {
   const accessToken = useAuthStore.getState().accessToken;
 
-  return fetch(API_URL + "/api/tasks/" + taskId, {
+  const response = await fetch(API_URL + "/api/tasks/" + taskId, {
     method: "DELETE",
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${accessToken}`,
     },
-  })
-    .then((response) => response.json())
-    .then((data) => data);
+  });
+
+  if (response.status === 204) {
+    return true;
+  }
+
+  return false;
 }

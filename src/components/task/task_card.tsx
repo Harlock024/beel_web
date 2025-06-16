@@ -7,19 +7,10 @@ import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { FormEvent, useState } from "react";
 import { useTaskStore } from "@/stores/task_store";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "../ui/collapsible";
-import { TaskDetails } from "./task_details";
-import { Card } from "../ui/card";
 
 export function TaskCard({ task }: { task: Task }) {
-  const [doneTask, setDoneTask] = useState(false);
-  const [isOpen, setIsOpen] = useState(false);
   const { lists } = useListStore();
-  const { setTask } = useTaskStore();
+  const { setTask, updateTask } = useTaskStore();
 
   const list = lists.find((list) => list.id === task.list_id);
 
@@ -31,15 +22,20 @@ export function TaskCard({ task }: { task: Task }) {
 
   const handleDoneTask = (e: React.FormEvent) => {
     e.preventDefault();
-    setDoneTask(!doneTask);
+
+    const updatedTask: Partial<Task> = {
+      is_completed: !task.is_completed,
+    };
+    updateTask(updatedTask, task.id!);
   };
+
   return (
     <div className="w-full flex  justify-center items-center">
       <Checkbox
         id={`task-${task.id}`}
         className="h-5 w-5 mt-1"
         role="checkbox"
-        checked={doneTask}
+        checked={task.is_completed}
         onClick={handleDoneTask}
       />
       <div className="flex   w-full px-4 py-3 hover:bg-gray-50 rounded-lg transition-colors  items-center  gap-4">
@@ -52,15 +48,15 @@ export function TaskCard({ task }: { task: Task }) {
               <Label
                 htmlFor={`task-${task.id}`}
                 className={`font-medium cursor-pointer ${
-                  doneTask ? "line-through text-gray-400" : "text-gray-900"
+                  task.is_completed
+                    ? "line-through text-gray-400"
+                    : "text-gray-900"
                 }`}
               >
                 {task.title}
               </Label>
 
-              <ChevronRight
-                className={`h-4 w-4 transform transition-transform ${isOpen ? "rotate-180" : ""}`}
-              />
+              <ChevronRight className="h-4 w-4 transform transition-transform" />
             </div>
 
             <div className="flex flex-wrap items-center gap-3 text-sm text-gray-500">

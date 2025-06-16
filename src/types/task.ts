@@ -7,7 +7,7 @@ export type Task = {
   sub_tasks?: Subtask[];
   tags?: Tag[];
   description?: string;
-  completed: boolean;
+  is_completed: boolean;
   due_date?: string;
 };
 

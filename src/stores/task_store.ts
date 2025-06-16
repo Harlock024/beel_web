@@ -94,17 +94,17 @@ export const useTaskStore = create<TaskState>((set, get) => ({
       deleted.delete(id);
       return { tasks: deleted };
     });
+
     try {
       await DeleteTask(id);
     } catch (error) {
       console.error("Error al eliminar tarea", error);
+      set((state) => {
+        const rollback = new Map(state.tasks);
+        rollback.set(id, taskToDelete);
+        return { tasks: rollback };
+      });
     }
-
-    set((state) => {
-      const updated = new Map(state.tasks);
-      updated.set(id, taskToDelete);
-      return { tasks: updated };
-    });
   },
 
   closeTask: () => {
