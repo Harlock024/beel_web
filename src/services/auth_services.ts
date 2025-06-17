@@ -12,19 +12,17 @@ export async function login(
   try {
     const response = await fetch(`${API_URL}/auth/login`, {
       method: "POST",
+      credentials: "include",
       headers: {
         "Content-Type": "application/json",
       },
-      credentials: "include",
       body: JSON.stringify({ email, password }),
     });
 
     if (!response.ok) {
       throw new Error("Login failed");
     }
-
-    const data: LoginResponse = await response.json();
-    return data;
+    return await response.json();
   } catch (error) {
     throw new Error("Login failed");
   }
@@ -34,6 +32,7 @@ export async function refresh() {
   try {
     const response = await fetch(`${API_URL}/auth/refresh`, {
       method: "POST",
+      credentials: "include",
       headers: {
         "Content-Type": "application/json",
       },
@@ -54,6 +53,7 @@ export async function logout() {
   try {
     const response = await fetch(`${API_URL}/auth/logout`, {
       method: "POST",
+      credentials: "include",
       headers: {
         "Content-Type": "application/json",
       },

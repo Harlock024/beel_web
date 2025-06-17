@@ -52,9 +52,8 @@ export function LoginForm({
     if (!emailValidationError && !passwordValidationError) {
       try {
         await login(email, password);
-
         toast.success("Login successful");
-        window.location.href = "/home";
+        //window.location.href = "/home";
       } catch (error) {
         toast.error("Login failed");
         console.error("Login failed:", error);
