@@ -1,76 +1,47 @@
 import { List, ListsResponseProp } from "@/types/list";
-import { API_URL } from "./api_url";
-import { useAuthStore } from "@/stores/useAuthStore";
+import { api_client, handleAxiosError } from "@/lib/api";
 
 export async function FetchLists(): Promise<ListsResponseProp> {
   try {
-    const response = await fetch(`${API_URL}/api/lists`, {
-      method: "GET",
-      credentials: "include",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-    const data = await response.json();
-
-    return data;
+    const response = await api_client.get<ListsResponseProp>("/api/lists");
+    return response.data;
   } catch (error) {
-    console.error("Error fetching lists:", error);
-    throw error;
+    handleAxiosError(error, "FetchLists");
   }
 }
-
 export async function CreateList(title: string, color: string): Promise<List> {
   try {
-    const response = await fetch(`${API_URL}/api/lists`, {
-      method: "POST",
-      credentials: "include",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ title, color }),
+    const response = await api_client.post<{ list: List }>("/api/lists", {
+      title,
+      color,
     });
-    const data = await response.json();
-    return data.list;
+    return response.data.list;
   } catch (error) {
-    console.error("Error creating list:", error);
-    throw error;
+    handleAxiosError(error, "CreateList");
   }
 }
+
 export async function UpdateList(
   list: Partial<List>,
 ): Promise<ListsResponseProp> {
   try {
-    const response = await fetch(`${API_URL}/api/lists/${list.id}`, {
-      method: "PUT",
-      credentials: "include",
-      headers: {
-        "Content-Type": "application/json",
+    const response = await api_client.put<ListsResponseProp>(
+      `/api/lists/${list.id}`,
+      {
+        title: list.title,
+        color: list.color,
       },
-      body: JSON.stringify({ title: list.title, color: list.color }),
-    });
-    const data = await response.json();
-    return data;
+    );
+    return response.data;
   } catch (error) {
-    console.error("Error updating list:", error);
-    throw error;
+    handleAxiosError(error, "UpdateList");
   }
 }
 
 export async function DeleteList(id: string): Promise<void> {
   try {
-    const response = await fetch(`${API_URL}/api/lists/${id}`, {
-      method: "DELETE",
-      credentials: "include",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-    if (!response.ok) {
-      throw new Error(`Failed to delete list: ${response.statusText}`);
-    }
+    await api_client.delete(`/api/lists/${id}`);
   } catch (error) {
-    console.error("Error deleting list:", error);
-    throw error;
+    handleAxiosError(error, "DeleteList");
   }
 }

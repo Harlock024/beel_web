@@ -3,7 +3,6 @@ import { API_URL } from "./api_url";
 
 export type LoginResponse = {
   user: User;
-  refresh_token: string;
 };
 
 export async function login(
