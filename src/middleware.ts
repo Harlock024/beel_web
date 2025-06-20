@@ -6,10 +6,18 @@ export const onRequest: MiddlewareHandler = async (
 ) => {
   const token = cookies.get("access_token");
 
-  const isProtectedRoute = request.url.includes("/home");
+  const url = new URL(request.url);
+  const path = url.pathname;
+
+  const isProtectedRoute = path.startsWith("/home");
+  const isAuthRoute = path === "/login" || path === "/register" || path === "/";
 
   if (isProtectedRoute && !token) {
     return redirect("/login");
+  }
+
+  if (isAuthRoute && token) {
+    return redirect("/home");
   }
   return next();
 };

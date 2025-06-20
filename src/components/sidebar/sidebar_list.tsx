@@ -10,7 +10,7 @@ export function SidebarList() {
     if (lists.length === 0) {
       fetchLists();
     }
-  }, [lists, fetchLists]);
+  }, [fetchLists]);
 
   return (
     <aside>

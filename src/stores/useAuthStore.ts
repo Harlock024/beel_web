@@ -1,5 +1,6 @@
 import { login, register } from "@/services/auth_services";
 import { User } from "@/types/user";
+import { AstroCookies } from "astro";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
@@ -33,6 +34,7 @@ export const useAuthStore = create<AuthState>()(
       login: async (email: string, password: string) => {
         try {
           const { user } = await login(email, password);
+          console.log("User logged in:", user);
           set({
             user,
           });
@@ -43,6 +45,12 @@ export const useAuthStore = create<AuthState>()(
       logout: () => {
         set({ user: null });
         localStorage.clear();
+        document.cookie =
+          "access_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+        document.cookie =
+          "refresh_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+
+        window.location.href = "/";
       },
     }),
     {
