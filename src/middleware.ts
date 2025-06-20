@@ -10,7 +10,7 @@ export const onRequest: MiddlewareHandler = async (
   const path = url.pathname;
 
   const isProtectedRoute = path.startsWith("/home");
-  const isAuthRoute = path === "/login" || path === "/register" || path === "/";
+  const isAuthRoute = path === "/login" || path === "/register";
 
   if (isProtectedRoute && !token) {
     return redirect("/login");
