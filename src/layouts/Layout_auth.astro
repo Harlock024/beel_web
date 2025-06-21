@@ -1,5 +1,5 @@
 ---
-import { Protected } from "@/components/Protected";
+import { RedirectAuth } from "@/components/Protected";
 import "../styles/global.css";
 import { Toaster } from "react-hot-toast";
 ---
@@ -12,12 +12,15 @@ import { Toaster } from "react-hot-toast";
         <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
         <title>Beel Project</title>
     </head>
+
     <body class="m-0 min-h-screen">
-        <main
-            class="flex flex-col justify-center items-center w-screen h-screen"
-        >
-            <slot />
-        </main>
+        <RedirectAuth client:load>
+            <main
+                class="flex flex-col justify-center items-center w-screen h-screen"
+            >
+                <slot />
+            </main>
+        </RedirectAuth>
+        <Toaster position="bottom-center" client:load />
     </body>
-    <Toaster position="bottom-center" client:load />
 </html>
