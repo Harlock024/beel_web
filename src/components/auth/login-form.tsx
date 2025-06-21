@@ -55,6 +55,7 @@ export function LoginForm({
         toast.success("Login successful");
         window.location.href = "/home";
       } catch (error) {
+        setIsLoading(false);
         toast.error("Login failed");
         console.error("Login failed:", error);
       }

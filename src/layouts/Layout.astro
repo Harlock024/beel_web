@@ -5,6 +5,8 @@ import "../styles/global.css";
 import { Toaster } from "react-hot-toast";
 import { ClientRouter } from "astro:transitions";
 import { Header } from "@/components/header/header";
+import { AuthGate } from "@/components/auth/auth_gate";
+import { Protected } from "@/components/Protected";
 
 const { title } = Astro.props;
 ---
@@ -19,7 +21,6 @@ const { title } = Astro.props;
         <title>Beel Project {title}</title>
         <ClientRouter />
     </head>
-
     <body class="flex m-0 min-h-screen">
         <Sidebar client:load transition:persist />
         <main class="flex-1 overflow-auto p-4">

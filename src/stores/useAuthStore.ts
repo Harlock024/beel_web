@@ -6,6 +6,8 @@ import { persist } from "zustand/middleware";
 
 type AuthState = {
   user: User | null;
+  accessToken: string | null;
+  refreshToken: string | null;
   isLoading: boolean;
   register: (
     username: string,
@@ -20,36 +22,46 @@ export const useAuthStore = create<AuthState>()(
   persist(
     (set, get) => ({
       user: null,
+      accessToken: null,
+      refreshToken: null,
       isLoading: false,
       register: async (username: string, email: string, password: string) => {
         try {
-          const { user } = await register(username, email, password);
+          const { user, access_token, refresh_token } = await register(
+            username,
+            email,
+            password,
+          );
           set({
             user,
+            accessToken: access_token,
+            refreshToken: refresh_token,
           });
         } catch (error) {
           console.error("Registration failed:", error);
         }
       },
       login: async (email: string, password: string) => {
+        console.log("login in process");
         try {
-          const { user } = await login(email, password);
+          const { user, access_token, refresh_token } = await login(
+            email,
+            password,
+          );
           console.log("User logged in:", user);
           set({
+            isLoading: true,
             user,
+            accessToken: access_token,
+            refreshToken: refresh_token,
           });
         } catch (error) {
           console.error("Login failed:", error);
         }
       },
       logout: () => {
-        set({ user: null });
+        set({ user: null, accessToken: null, refreshToken: null });
         localStorage.clear();
-        document.cookie =
-          "access_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-        document.cookie =
-          "refresh_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-
         window.location.href = "/";
       },
     }),

@@ -3,6 +3,8 @@ import { API_URL } from "./api_url";
 
 export type LoginResponse = {
   user: User;
+  access_token: string;
+  refresh_token: string;
 };
 
 export async function login(
@@ -12,7 +14,6 @@ export async function login(
   try {
     const response = await fetch(`${API_URL}/auth/login`, {
       method: "POST",
-      credentials: "include",
       headers: {
         "Content-Type": "application/json",
       },
@@ -32,7 +33,6 @@ export async function refresh() {
   try {
     const response = await fetch(`${API_URL}/auth/refresh`, {
       method: "POST",
-      credentials: "include",
       headers: {
         "Content-Type": "application/json",
       },
@@ -53,7 +53,6 @@ export async function logout() {
   try {
     const response = await fetch(`${API_URL}/auth/logout`, {
       method: "POST",
-      credentials: "include",
       headers: {
         "Content-Type": "application/json",
       },
@@ -81,7 +80,6 @@ export async function register(
       headers: {
         "Content-Type": "application/json",
       },
-      credentials: "include",
       body: JSON.stringify({ username, email, password }),
     });
 

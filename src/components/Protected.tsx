@@ -1,20 +1,19 @@
 // src/components/Protected.tsx
 import { useEffect } from "react";
-
 import { useAuthStore } from "../stores/useAuthStore";
-
 export function Protected({ children }: { children: React.ReactNode }) {
-  const isAuthenticated = useAuthStore((state) => state.user);
+  const isAuthenticated = useAuthStore((state) => state.isLoading);
 
   useEffect(() => {
     if (!isAuthenticated) {
       window.location.href = "/login";
-      console.error("User is not authenticated");
+      console.log("User not authenticated, redirecting to login");
+      console.log("isAuthenticated:", isAuthenticated);
+    } else {
+      window.location.href = "/home";
+      console.log("User authenticated, navigating to home");
     }
   }, [isAuthenticated]);
-
-  return isAuthenticated;
-
   return <>{isAuthenticated ? children : null}</>;
 }
 export function useProtected() {

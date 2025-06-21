@@ -8,8 +8,9 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const timeout = setTimeout(() => {
       if (!isAuthenticated) {
-        window.location.href = "/";
+        window.location.href = "/login";
       } else {
+        window.location.href = "/home";
         setLoading(false);
       }
     }, 500);
