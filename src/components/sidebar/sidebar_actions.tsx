@@ -16,6 +16,7 @@ export function SidebarActions() {
   const [newList, setIsNewList] = useState(false);
   const [isSettingOpen, setSettingOpen] = useState(false);
   const currentUser = useAuthStore((state) => state.user);
+  const logout = useAuthStore((state) => state.logout);
 
   function HandletoggleNewList() {
     setIsNewList(!newList);
@@ -58,13 +59,12 @@ export function SidebarActions() {
                 </button>
               </DropdownMenuItem>
               <DropdownMenuItem>
-                <a href="/help" className="flex items-center gap-2">
-                  Help
-                </a>
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <a href="/about" className="flex items-center gap-2">
-                  About
+                <a
+                  href="/login"
+                  onClick={logout}
+                  className="flex items-center gap-2"
+                >
+                  Logout
                 </a>
               </DropdownMenuItem>
             </DropdownMenuContent>
