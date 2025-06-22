@@ -17,7 +17,7 @@ type TaskState = {
   listFetched: Set<string>;
   filtersFetched: Set<String>;
   setTask: (id: string) => void;
-  getTasks: (list_id?: string, filter?: FilterType) => void;
+  getTasks: (list_id?: string, filter?: FilterType) => Promise<void>;
   closeTask: () => void;
   addTask: (newTask: Task) => void;
   removeTask: (id: string) => void;

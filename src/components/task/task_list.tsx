@@ -2,6 +2,7 @@ import { useTaskStore } from "@/stores/task_store";
 import { TaskCard } from "./task_card";
 import { useEffect, useState } from "react";
 import { FilterType, useFilterStore } from "@/stores/useFilterStore";
+import { SkeletonTaskList } from "./SkeletonTaskList"; // Importa el skeleton
 
 export function TaskList({
   list_id,
@@ -15,42 +16,25 @@ export function TaskList({
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    setIsLoading(true);
     if (list_id || filter) {
-      getTasks(list_id, filter);
+      getTasks(list_id, filter).finally(() => {
+        setIsLoading(false);
+      });
+    } else {
       setIsLoading(false);
     }
+    
   }, [list_id, filter]);
-
   useEffect(() => {
     if (filter) {
       filterTasks({ listId: list_id, dateFilter: filter });
-      setIsLoading(false);
     }
+    // eslint-disable-next-line
   }, [tasks, filter]);
 
   if (isLoading) {
-    return (
-      <div className="flex flex-col gap-2">
-        <div className="bg-card rounded-lg p-4 flex flex-col gap-2 animate-pulse">
-          <div className="h-4 bg-muted rounded w-1/3 mb-2"></div>
-          <div className="h-3 bg-muted rounded w-2/3 mb-1"></div>
-          <div className="h-3 bg-muted rounded w-1/2"></div>
-          <div className="flex gap-2 mt-3">
-            <div className="h-6 w-16 bg-muted rounded"></div>
-            <div className="h-6 w-10 bg-muted rounded"></div>
-          </div>
-        </div>
-        <div className="bg-card rounded-lg p-4 flex flex-col gap-2 animate-pulse">
-          <div className="h-4 bg-muted rounded w-1/3 mb-2"></div>
-          <div className="h-3 bg-muted rounded w-2/3 mb-1"></div>
-          <div className="h-3 bg-muted rounded w-1/2"></div>
-          <div className="flex gap-2 mt-3">
-            <div className="h-6 w-16 bg-muted rounded"></div>
-            <div className="h-6 w-10 bg-muted rounded"></div>
-          </div>
-        </div>
-      </div>
-    );
+    return <SkeletonTaskList />;
   }
 
   if (filter) {

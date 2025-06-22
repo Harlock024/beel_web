@@ -30,7 +30,7 @@ export function TaskCard({ task }: { task: Task }) {
   };
 
   return (
-    <div className="w-full flex  justify-center items-center">
+    <article className="w-full flex  justify-center items-center">
       <Checkbox
         id={`task-${task.id}`}
         className="h-5 w-5 mt-1"
@@ -88,6 +88,6 @@ export function TaskCard({ task }: { task: Task }) {
           </div>
         </button>
       </div>
-    </div>
+    </article>
   );
 }

@@ -42,7 +42,6 @@ export function AvatarAction() {
               Profile
             </a>
           </DropdownMenuItem>
-
           <DropdownMenuItem>
             <a onClick={logout} className="flex" href="/login">
               <LogOut className="mr-2 h-4 w-4" />
