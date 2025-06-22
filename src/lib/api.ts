@@ -14,7 +14,6 @@ export const api_client: AxiosInstance = axios.create({
     "Content-Type": "application/json",
   },
 });
-
 api_client.interceptors.request.use(
   (config) => {
     if (typeof window !== "undefined") {

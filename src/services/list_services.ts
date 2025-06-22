@@ -1,5 +1,6 @@
 import { List, ListsResponseProp } from "@/types/list";
 import { api_client, handleAxiosError } from "@/lib/api";
+import { API_URL } from "./api_url";
 
 export async function FetchLists(): Promise<ListsResponseProp> {
   try {
@@ -9,6 +10,7 @@ export async function FetchLists(): Promise<ListsResponseProp> {
     handleAxiosError(error, "FetchLists");
   }
 }
+
 export async function CreateList(title: string, color: string): Promise<List> {
   try {
     const response = await api_client.post<{ list: List }>("/api/lists", {

@@ -1,4 +1,5 @@
 ---
+import { TitleListUpdater } from "@/components/list/title_list_updater";
 import { TaskForm } from "@/components/task/task_form";
 import { TaskList } from "@/components/task/task_list";
 import Layout from "@/layouts/Layout.astro";
@@ -9,7 +10,8 @@ if (!id) {
 }
 ---
 
-<Layout title={` - list - ${id}`}>
+<Layout>
+    <TitleListUpdater client:only="react" />
     <TaskForm client:load />
     <TaskList list_id={id} client:load />
 </Layout>

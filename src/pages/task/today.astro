@@ -4,7 +4,7 @@ import { TaskList } from "@/components/task/task_list";
 import Layout from "@/layouts/Layout.astro";
 ---
 
-<Layout>
+<Layout title="Today">
     <TaskForm client:load />
     <TaskList filter={"today"} client:load />
 </Layout>

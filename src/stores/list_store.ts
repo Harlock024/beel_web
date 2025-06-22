@@ -7,10 +7,13 @@ import {
   FetchLists,
   UpdateList,
 } from "@/services/list_services";
+import { persist } from "zustand/middleware";
 
 type Store = {
   lists: List[];
   selectedListId: string | null;
+  selectedTitleList: string | null;
+  listsLoaded: boolean;
 
   // Acciones
   setSelectedList: (id: string) => void;
@@ -18,50 +21,58 @@ type Store = {
   createList: (title: string, color: string) => void;
   updateList: (updatedList: Partial<List>) => void;
   deleteList: (id: string) => void;
-  // countedTask: (listId: string) => void;
 };
 
-export const useListStore = create<Store>((set, get) => ({
-  lists: [],
-  selectedListId: null,
-  setSelectedList: (id) => {
-    set({ selectedListId: id });
-  },
-  fetchLists: async () => {
-    const listsResponse = await FetchLists();
+export const useListStore = create<Store>()(
+  persist(
+    (set, get) => ({
+      lists: [],
+      selectedTitleList: null,
+      selectedListId: null,
+      listsLoaded: false,
 
-    set({ lists: listsResponse.lists });
-  },
+      setSelectedList: (id) => {
+        set({
+          selectedListId: id,
+          selectedTitleList:
+            get().lists.find((list) => list.id === id)?.title || null,
+        });
+      },
+      fetchLists: async () => {
+        const listsResponse = await FetchLists();
 
-  createList: async (title, color) => {
-    const newListResponse = await CreateList(title, color);
-    set((state) => ({ lists: [...state.lists, newListResponse] }));
-  },
-  updateList: async (updatedList) => {
-    const updated = await UpdateList(updatedList);
+        set({ lists: listsResponse.lists });
+      },
 
-    set((state) => ({
-      lists: state.lists.map((list) =>
-        list.id === updatedList.id ? { ...list, ...updated } : list,
-      ),
-    }));
-  },
-  deleteList: async (id) => {
-    await DeleteList(id);
-    set((state) => ({
-      lists: state.lists.filter((list) => list.id !== id),
-      selectedListId: state.selectedListId === id ? null : state.selectedListId,
-    }));
-  },
-  // countedTask: (listId: string) => {
-  //   const taskList = useTaskStore.getState().tasks;
-  //   const taskCount = taskList.filter((task) => task.list_id === listId);
-  //   set((state) => ({
-  //     lists: state.lists.map((list) =>
-  //       list.id === listId
-  //         ? { ...list, numTaskAsigned: taskCount.length }
-  //         : list,
-  //     ),
-  //   }));
-  // },
-}));
+      createList: async (title, color) => {
+        const newListResponse = await CreateList(title, color);
+        set((state) => ({ lists: [...state.lists, newListResponse] }));
+      },
+      updateList: async (updatedList) => {
+        const updated = await UpdateList(updatedList);
+
+        set((state) => ({
+          lists: state.lists.map((list) =>
+            list.id === updatedList.id ? { ...list, ...updated } : list,
+          ),
+        }));
+      },
+      deleteList: async (id) => {
+        await DeleteList(id);
+        set((state) => ({
+          lists: state.lists.filter((list) => list.id !== id),
+          selectedListId:
+            state.selectedListId === id ? null : state.selectedListId,
+        }));
+      },
+    }),
+    {
+      name: "list-storage",
+      partialize: (state) => ({
+        lists: state.lists,
+        selectedListId: state.selectedListId,
+        listsLoaded: state.listsLoaded,
+      }),
+    },
+  ),
+);
