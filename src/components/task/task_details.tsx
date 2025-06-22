@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, use } from "react";
 import { Task } from "@/types/task";
 import { useTaskStore } from "@/stores/task_store";
 import { X } from "lucide-react";
@@ -26,6 +26,30 @@ export function TaskDetails({ className }: TaskDetailsProps) {
   const [isSaving, setIsSaving] = useState(false);
   const sidebarRef = useRef<HTMLDivElement>(null);
   const widthRef = useRef(400);
+
+  const debounceRef = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    if (!currentTask) return;
+    if (!currentTask.title.trim()) return;
+    if (!hasTaskChanged()) return; 
+
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+
+    debounceRef.current = setTimeout(() => {
+      handleEditTask();
+    }, 1000);
+
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
+  }, [
+    currentTask?.title,
+    currentTask?.description,
+    currentTask?.due_date,
+    currentTask?.list_id,
+    task, 
+  ]);
 
   const startResizing = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -72,6 +96,8 @@ export function TaskDetails({ className }: TaskDetailsProps) {
 
     setIsSaving(true);
 
+    const toastId = toast.loading("Save changes...");
+
     try {
       const changes: Partial<Task> = {};
       const trimmedTitle = currentTask.title.trim();
@@ -80,6 +106,7 @@ export function TaskDetails({ className }: TaskDetailsProps) {
       if (trimmedTitle !== task?.title) {
         if (!trimmedTitle) {
           toast.error("Title cannot be empty");
+          toast.dismiss(toastId);
           return;
         }
         changes.title = trimmedTitle;
@@ -99,11 +126,14 @@ export function TaskDetails({ className }: TaskDetailsProps) {
       }
 
       if (Object.keys(changes).length === 0) {
+        toast.dismiss(toastId);
         return;
       }
-      updateTask(changes, currentTask.id || "");
+
+      await updateTask(changes, currentTask.id || "");
+      toast.success("Saved changes", { id: toastId });
     } catch (error) {
-      toast.error("Failed to update task. Please try again.");
+      toast.error("Error al guardar cambios", { id: toastId });
       console.error(error);
     } finally {
       setIsSaving(false);
@@ -170,6 +200,16 @@ export function TaskDetails({ className }: TaskDetailsProps) {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [task]);
+
+  function hasTaskChanged() {
+    if (!currentTask || !task) return false;
+    return (
+      currentTask.title.trim() !== task.title.trim() ||
+      (currentTask.description?.trim() || "") !== (task.description?.trim() || "") ||
+      (currentTask.due_date || "") !== (task.due_date || "") ||
+      (currentTask.list_id || "") !== (task.list_id || "")
+    );
+  }
 
   return (
     <div>

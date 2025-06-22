@@ -138,7 +138,6 @@ export const useTaskStore = create<TaskState>((set, get) => ({
 
     try {
       await UpdateTask(updatedTask, task_id);
-      toast.success("Tarea actualizada");
     } catch (error) {
       set((state) => {
         const updated = new Map(state.tasks);

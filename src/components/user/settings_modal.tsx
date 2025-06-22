@@ -292,7 +292,8 @@ export function SettingFooter() {
   return (
     <div className="w-full flex justify-end items-center gap-2 p-4 border-t">
       <button
-        className="bg-blue-600 text-white px-4 py-1.5 rounded hover:bg-blue-700 transition"
+        className="bg-[#673ab7]  hover:bg-[#592E83] text-white px-4 py-1.5 rounded  transition"
+  
         // onClick={handleSave} // Aquí puedes conectar la lógica de guardado
       >
         Guardar cambios
