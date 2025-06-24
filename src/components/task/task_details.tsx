@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import toast from "react-hot-toast";
+import { TaskEditor } from "./task_editor";
 
 type TaskDetailsProps = {
   className?: string;
@@ -253,7 +254,7 @@ export function TaskDetails({ className }: TaskDetailsProps) {
               }}
               className="flex-1 overflow-y-auto px-4 py-6 space-y-6"
             >
-              <textarea
+              {/* <textarea
                 className="w-full bg-transparent outline-none resize-none min-h-[200px] text-sm placeholder:text-muted-foreground border-muted-foreground focus:border-primary transition-all"
                 value={currentTask?.description || ""}
                 onChange={(e) =>
@@ -262,7 +263,16 @@ export function TaskDetails({ className }: TaskDetailsProps) {
                   )
                 }
                 placeholder="Write something about this task..."
+              /> */}
+              
+              <TaskEditor key={currentTask?.id} content={currentTask?.description || ""}
+              onChange={(content) =>
+                setCurrentTask((prev) =>
+                  prev ? { ...prev, description: content } : undefined,
+                )
+              }
               />
+
               <div>
                 <label className="block text-sm font-medium mb-1">List</label>
                 <select
