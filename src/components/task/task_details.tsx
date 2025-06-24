@@ -40,7 +40,7 @@ export function TaskDetails({ className }: TaskDetailsProps) {
 
     debounceRef.current = setTimeout(() => {
       handleEditTask();
-    }, 1000);
+    }, 2000);
 
     return () => {
       if (debounceRef.current) clearTimeout(debounceRef.current);
@@ -96,9 +96,7 @@ export function TaskDetails({ className }: TaskDetailsProps) {
 
   const handleEditTask = async () => {
     if (!currentTask) return;
-
     setIsSaving(true);
-
     const toastId = toast.loading("Save changes...");
 
     try {

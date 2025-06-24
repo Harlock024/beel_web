@@ -144,7 +144,7 @@ export const useTaskStore = create<TaskState>((set, get) => ({
         updated.set(task_id, existingTask);
         return { tasks: updated };
       });
-      toast.error("No se pudo actualizar la tarea");
+      console.error("Error al actualizar tarea", error);
     }
   },
 }));

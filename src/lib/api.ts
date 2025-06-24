@@ -7,6 +7,7 @@ import axios, {
 import { API_URL } from "../services/api_url";
 
 import { useAuthStore } from "@/stores/useAuthStore";
+import { LoginResponse } from "@/services/auth_services";
 
 export const api_client: AxiosInstance = axios.create({
   baseURL: API_URL,
@@ -55,7 +56,7 @@ api_client.interceptors.response.use(
 >>>>>>> 8d043a9 (feat: integrate Tiptap editor for task descriptions and implement API client with token refresh logic)
 
       try {
-        const refreshRes = await axios.post(
+        const refreshRes = await axios.post<LoginResponse>(
           `${API_URL}/auth/refresh`,
           {
 <<<<<<< HEAD
@@ -84,9 +85,9 @@ api_client.interceptors.response.use(
         } else {
 =======
           console.log("Token refresh successful");
-          
+        
           useAuthStore.setState({
-            user: refreshRes.data.user,
+            user: refreshRes.data.user || useAuthStore.getState().user,
             accessToken: refreshRes.data.access_token,
             refreshToken: refreshRes.data.refresh_token || refreshToken, 
           });
