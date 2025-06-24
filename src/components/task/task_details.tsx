@@ -131,7 +131,7 @@ export function TaskDetails({ className }: TaskDetailsProps) {
         return;
       }
 
-      await updateTask(changes, currentTask.id || "");
+      updateTask(changes, currentTask.id || "");
       toast.success("Saved changes", { id: toastId });
     } catch (error) {
       toast.error("Error al guardar cambios", { id: toastId });
@@ -166,16 +166,27 @@ export function TaskDetails({ className }: TaskDetailsProps) {
     const handleKeyboardSave = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.key === "s") {
         e.preventDefault();
+
+        if (debounceRef.current) {
+          clearTimeout(debounceRef.current);
+          debounceRef.current = null;
+        }
+
         if (!isSaving && currentTask?.title.trim()) {
+          if (!hasTaskChanged()) {
+            toast.error("No changes to save");
+            return;
+          }
           handleEditTask();
         }
       }
     };
+
     window.addEventListener("keydown", handleKeyboardSave);
     return () => {
       window.removeEventListener("keydown", handleKeyboardSave);
     };
-  }, [currentTask, isSaving]);
+  }, [currentTask, isSaving, task]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
