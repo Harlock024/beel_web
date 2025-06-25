@@ -9,7 +9,6 @@ import { useListStore } from "@/stores/list_store";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import toast from "react-hot-toast";
-import { TaskEditor } from "./task_editor";
 import { List } from "@/types/list";
 import { useSidebarStore } from "@/stores/sidebarStore";
 
@@ -27,6 +26,7 @@ export function TaskDetails({ className }: TaskDetailsProps) {
   const sidebarRef = useRef<HTMLDivElement>(null);
   const widthRef = useRef(400);
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
+  console.log("currentTask", currentTask);
 
   const startResizing = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -212,15 +212,15 @@ export function TaskDetails({ className }: TaskDetailsProps) {
   function hasTaskChanged() {
     if (!currentTask || !task) return false;
     if (currentTask.id !== task.id) return true; // Si los IDs son diferentes, hay cambios
-   
+
+
     return (
       currentTask.title.trim() !== task.title.trim() ||
-      (currentTask.description?.trim() || "") !== (task.description?.trim() || "") ||
+     currentTask.description?.trim() !== task.description?.trim() || 
       (currentTask.due_date || "") !== (task.due_date || "") ||
       (currentTask.list_id || "") !== (task.list_id || "")
     );
   }
-
   return (
     <div>
       {task && (
@@ -263,12 +263,15 @@ export function TaskDetails({ className }: TaskDetailsProps) {
               }}
               className="flex-1 overflow-y-auto px-6 py-4"
             >
-              <TaskEditor
-                key={currentTask?.id}
-                content={currentTask?.description || ""}
-                onChange={(content) =>
-                  setCurrentTask((prev) => (prev ? { ...prev, description: content } : undefined))
+              <textarea
+                className="w-full bg-transparent outline-none resize-none min-h-[200px] text-sm placeholder:text-muted-foreground border-muted-foreground focus:border-primary transition-all"
+                value={currentTask?.description || ""}
+                onChange={(e) =>
+                  setCurrentTask((prev) =>
+                    prev ? { ...prev, description: e.target.value } : undefined,
+                  )
                 }
+                placeholder="Write something about this task..."
               />
             </form>
           </div>
