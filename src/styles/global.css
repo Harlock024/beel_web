@@ -1,6 +1,8 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
+@import '@fontsource-variable/inter';
+
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
@@ -118,6 +120,7 @@
     @apply border-border outline-ring/50;
   }
   body {
+    font-family:  'Inter Variable', sans-serif;
     @apply bg-background text-foreground;
   }
 }
