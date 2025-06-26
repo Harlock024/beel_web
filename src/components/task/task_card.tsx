@@ -1,59 +1,85 @@
+import { useState } from "react";
 import type { Task } from "@/types/task";
 import { Label } from "@/components/ui/label";
-import { Calendar, Hash, ChevronRight, Ellipsis } from "lucide-react";
+import { Calendar, Hash, Ellipsis, Check } from "lucide-react";
 import { format } from "date-fns";
 import { useListStore } from "@/stores/list_store";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { FormEvent } from "react";
 import { useTaskStore } from "@/stores/task_store";
-import { EllipsisVertical } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Button } from "../ui/button";
+import toast from "react-hot-toast";
+import { cn } from "@/lib/utils";
 
 export function TaskCard({ task }: { task: Task }) {
   const { lists } = useListStore();
-  const { setTask, updateTask,removeTask } = useTaskStore();
+  const { setTask, removeTask } = useTaskStore();
+  const [isCompleting, setIsCompleting] = useState(false);
 
   const list = lists.find((list) => list.id === task.list_id);
 
   function handleSetTask(e: FormEvent) {
     e.preventDefault();
+    if (isCompleting) return; // Prevent opening task details while completing
     setTask(task.id!);
-    console.log("task id", task.id);
   }
 
   const handleDoneTask = (e: React.FormEvent) => {
     e.preventDefault();
-
-    const updatedTask: Partial<Task> = {
-      is_completed: !task.is_completed,
-    };
-    updateTask(updatedTask, task.id!);
+    e.stopPropagation();
+    
+    // Set completing state for animation
+    setIsCompleting(true);
+    
+    // Show success toast
+    toast.success("Task completed");
+    
+    // Remove task after animation
+    setTimeout(() => {
+      removeTask(task.id!);
+    }, 800);
   };
-
+  
   return (
-    <div className="group w-full  flex mt-2 items-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-200">
-      <Checkbox
-        id={`task-${task.id}`}
-        className="h-5 w-5 flex-shrink-0 transition-transform group-hover:scale-110"
-        role="checkbox"
-        checked={task.is_completed}
-        onClick={handleDoneTask}
-      />
+    <div 
+      className={cn(
+        "group w-full flex mt-2 items-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300",
+        isCompleting && "opacity-50 translate-x-2"
+      )}
+    >
+      <div className="relative">
+        <Checkbox
+          id={`task-${task.id}`}
+          className={cn(
+            "h-5 w-5 flex-shrink-0 transition-all",
+            isCompleting ? "scale-125 bg-green-500 border-green-500" : "group-hover:scale-110"
+          )}
+          role="checkbox"
+          checked={isCompleting || task.is_completed}
+          onClick={handleDoneTask}
+        />
+        {isCompleting && (
+          <Check className="h-3 w-3 text-white absolute top-1 left-1 animate-in zoom-in-50" />
+        )}
+      </div>
+      
       <button
         onClick={handleSetTask}
-        className="text-gray-700 w-full ml-3 py-2.5 px-3 rounded-md flex items-start justify-between transition-all"
+        className={cn(
+          "text-gray-700 w-full ml-3 py-2.5 px-3 rounded-md flex items-start justify-between transition-all",
+          isCompleting && "line-through"
+        )}
       >
         <div className="flex-1 space-y-2">
           <div className="flex items-center w-full">
             <Label
               htmlFor={`task-${task.id}`}
-              className={`font-medium text-sm md:text-base ${
-                task.is_completed
-                  ? "line-through text-gray-400"
-                  : "text-gray-800"
-              }`}
+              className={cn(
+                "font-medium text-sm md:text-base text-gray-800",
+                isCompleting && "line-through text-gray-400"
+              )}
             >
               {task.title}
             </Label>
@@ -98,13 +124,18 @@ export function TaskCard({ task }: { task: Task }) {
               <Button 
                 variant="ghost" 
                 size="sm" 
-                className="h-10 w-10 p-0" 
+                className="h-8 w-8 p-0" 
                 onClick={(e) => e.stopPropagation()}
+                disabled={isCompleting}
               >
-                <Ellipsis className="size-6  text-gray-400 hover:text-gray-600" />
+                <Ellipsis className="size-5 text-gray-400 hover:text-gray-600" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-48" align="end">
+            <DropdownMenuContent 
+              className="w-48" 
+              align="end"
+              onCloseAutoFocus={(e) => e.preventDefault()}
+            >
               <DropdownMenuItem 
                 onClick={(e) => {
                   e.stopPropagation(); 
@@ -118,6 +149,7 @@ export function TaskCard({ task }: { task: Task }) {
                   e.stopPropagation();
                   removeTask(task.id!);
                 }}
+                className="text-red-500 focus:text-red-500"
               >
                 Delete
               </DropdownMenuItem>

@@ -8,6 +8,7 @@ export type Task = {
   tags?: Tag[];
   description?: string;
   is_completed: boolean;
+  status?: string;
   due_date?: string;
 };
 
