@@ -11,6 +11,7 @@ import { cn } from "@/lib/utils";
 import toast from "react-hot-toast";
 import { List } from "@/types/list";
 import { useSidebarStore } from "@/stores/sidebarStore";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 type TaskDetailsProps = {
   className?: string;
@@ -91,29 +92,6 @@ export function TaskDetails({ className }: TaskDetailsProps) {
       };
     }, [currentTask, task, isSaving]);
 
-  // useEffect(() => {
-  //   if (!currentTask) return;
-  //   if (!currentTask.title.trim()) return;
-  //   if (!hasTaskChanged()) return; 
-  //   if (debounceRef.current) clearTimeout(debounceRef.current);
-  //   if (isSaving) return;
-  //   console.log("Debounce triggered for task edit auto-save",isSaving);
-  //   debounceRef.current = setTimeout(() => {
-  //     if (!currentTask) return;
-  //     if (!hasTaskChanged() && isSaving) return;
-  //     handleEditTask();
-  //   }, 2000);
-
-  //   return () => {
-  //     if (debounceRef.current) clearTimeout(debounceRef.current);
-  //   };
-  // }, [
-  //   currentTask?.title,
-  //   currentTask?.description,
-  //   currentTask?.due_date,
-  //   currentTask?.list_id,
-  //   task, 
-  // ]);
 
   const handleEditTask = async () => {
     if (!currentTask || isSaving) return; 
@@ -191,13 +169,16 @@ export function TaskDetails({ className }: TaskDetailsProps) {
       const target = event.target as HTMLElement;
 
       const isClickInsideSidebar = sidebarRef.current.contains(target);
-      const isRadixPortal = target.closest(
-        "[data-radix-popper-content-wrapper]",
-      );
-
-      if (!isClickInsideSidebar && !isRadixPortal) {
-        closeTask();
+      
+      const isSelectContent = !!target.closest(['[data-radix-select-content]',"[data-radix-select-trigger-content",["data-radix-select-value"]].join(', '));
+      const isPopoverContent = !!target.closest('[data-radix-popper-content-wrapper]');
+      const isAnyRadixPortal = !!target.closest('[data-radix-portal]');
+      
+      if (isClickInsideSidebar || isSelectContent || isPopoverContent || isAnyRadixPortal) {
+        return;
       }
+      
+      closeTask();
     };
 
     if (task) {
@@ -207,11 +188,11 @@ export function TaskDetails({ className }: TaskDetailsProps) {
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [task]);
+  }, [task, closeTask]);
 
   function hasTaskChanged() {
     if (!currentTask || !task) return false;
-    if (currentTask.id !== task.id) return true; // Si los IDs son diferentes, hay cambios
+    if (currentTask.id !== task.id) return true;
 
 
     return (
@@ -228,7 +209,7 @@ export function TaskDetails({ className }: TaskDetailsProps) {
           ref={sidebarRef}
           className={cn(
             "top-0 h-screen z-50 bg-white shadow-lg border-l transition-transform duration-300",
-            isOverlay ? "fixed right-0" : "absolute right-0", // Alterna entre "fixed" y "absolute"
+            isOverlay ? "fixed right-0" : "absolute right-0", 
             className,
           )}
           style={{ width: `${widthRef.current}px` }}
@@ -247,7 +228,7 @@ export function TaskDetails({ className }: TaskDetailsProps) {
               }
             />
 
-            {/* Actions */}
+            
             <TaskDetailsActions
               currentTask={currentTask}
               lists={lists}
@@ -255,7 +236,6 @@ export function TaskDetails({ className }: TaskDetailsProps) {
               handleDateChange={handleDateChange}
             />
 
-            {/* Editor */}
             <form
               onSubmit={(e) => {
                 e.preventDefault();
@@ -305,7 +285,6 @@ function TaskDetailsHeader({
         </div>
       </div>
 
-      {/* Campo de título */}
       <input
         type="text"
         value={task?.title || ""}
@@ -331,18 +310,28 @@ function TaskDetailsActions({
   return (
     <div className="px-6 py-4 space-y-6 border-b">
       <div className="flex justify-start gap-2 items-center space-y-2">
-        <label className="block text-sm font-medium mb-1">List</label>
-        <select
-          value={currentTask?.list_id || ""}
-          onChange={handleListChange}
-          className=" hover:bg-gray-300 appearance-none  rounded px-3 py-2 focus:outline-none focus:ring-0 "
-        >
-          {lists.map((list) => (
-            <option className="bg-white shadow-2xl "  key={list.id} value={list.id}>
-              {list.title}
-            </option>
-          ))}
-        </select>
+        <label className="block text-sm  font-medium mb-1">List</label>
+      
+        <div className="w-full" >
+        <Select   value={currentTask?.list_id || ""} onValueChange={(value) => {
+          handleListChange({ target: { value } } as React.ChangeEvent<HTMLSelectElement>);
+        }}>
+          <SelectTrigger  className="w-full">
+            <SelectValue placeholder="Select a list"/>
+          </SelectTrigger>
+          <SelectContent>
+            {lists.map((list) => (
+              <SelectItem
+                key={list.id}
+                value={list.id!}
+                className="cursor-pointer hover:bg-gray-100"
+              >
+               {list.title}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        </div>
       </div>
 
       <div>
