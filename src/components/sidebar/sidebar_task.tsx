@@ -37,25 +37,36 @@ export function SidebarTask({ className }: { className?: string }) {
   };
 
   return (
-    <div className={cn(className, "")}>
-      <div className="flex flex-col gap-2">
+    <aside className={cn("w-auto px-1 py-1", className)}>
+  
+      <div className="flex flex-col gap-1 w-full">
         {taskNav.map((item) => (
           <a
             href={item.href}
             onClick={(e) => {
+              e.preventDefault();
               handleNavClick(item);
             }}
             key={item.id}
             className={cn(
-              "  flex items-center gap-3 px-3 py-2 rounded-md w-full justify-start text-gray-700 hover:bg-gray-200 transition-colors",
-              selectedNavId === item.id ? "bg-gray-200 font-medium" : ""
+              "flex items-center gap-3 px-3 py-2 rounded-md w-full justify-start text-[14px] transition-all duration-200",
+              selectedNavId === item.id
+                ? "bg-[#ececec] text-gray-900 font-medium"
+                : "text-gray-700 hover:bg-[#ececec]"
             )}
           >
-            <span className="text-gray-600">{item.icon}</span>
-            <span>{item.title}</span>
+            <span
+              className={cn(
+                "flex-shrink-0 transition-colors",
+                selectedNavId === item.id ? "text-gray-900" : "text-gray-500"
+              )}
+            >
+              {item.icon}
+            </span>
+            <span className="select-none">{item.title}</span>
           </a>
         ))}
       </div>
-    </div>
+    </aside>
   );
 }

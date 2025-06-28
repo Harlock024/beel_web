@@ -49,7 +49,6 @@ function SidebarHeader({className}:{className?:string}) {
           <PanelRight className="w-5  h-5" />
         </button>
         </div>
-      <h1 className="text-xl font-bold text-black mt-5">Beel</h1>
     </header>
   );
 }
