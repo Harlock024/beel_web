@@ -15,14 +15,38 @@ export const api_client: AxiosInstance = axios.create({
     "Content-Type": "application/json",
   },
 });
+
+
+let refreshPromise: Promise<string> | null = null;
+
+
 api_client.interceptors.request.use(
-  (config) => {
-    if (typeof window !== "undefined") {
-      const {accessToken} = useAuthStore.getState();
+  (async (config) => {
+    
+    if (typeof window !== "undefined" && refreshPromise) {
+      await refreshPromise;
+
+      const {accessToken} =  useAuthStore.getState();
       if (accessToken) {
         config.headers = config.headers || {};
         config.headers.Authorization = `Bearer ${accessToken}`;
       }
+    }
+    return config;
+  }),
+  (error) => Promise.reject(error),
+);
+
+
+api_client.interceptors.request.use(
+  async (config) => {
+    if (typeof window !== "undefined" && refreshPromise) {
+      await refreshPromise; // Esperar a que termine el refresh antes de continuar
+    }
+    const { accessToken } = useAuthStore.getState();
+    if (accessToken) {
+      config.headers = config.headers || {};
+      config.headers.Authorization = `Bearer ${accessToken}`;
     }
     return config;
   },
@@ -30,7 +54,7 @@ api_client.interceptors.request.use(
 );
 
 api_client.interceptors.response.use(
-  (response: AxiosResponse) => response,
+  (response) => response,
   async (error: AxiosError) => {
     const originalRequest = error.config as AxiosRequestConfig & {
       _retry?: boolean;
@@ -42,40 +66,47 @@ api_client.interceptors.response.use(
       typeof window !== "undefined"
     ) {
       originalRequest._retry = true;
-      const {refreshToken} = useAuthStore.getState();
 
+      const { refreshToken } = useAuthStore.getState();
+
+      if (!refreshToken) {
+        useAuthStore.getState().logout();
+        window.location.href = "/login";
+        return Promise.reject(error);
+      }
       try {
-        const refreshRes = await axios.post<LoginResponse>(
-          `${API_URL}/auth/refresh`,
-          {
-            refresh_token: refreshToken,
-          },
-          {
-            headers: {
-              "Content-Type": "application/json",
-            },
-          },
-        );
-
-        if (refreshRes.status === 200 && refreshRes.data?.access_token) {
-          console.log("Token refresh successful");
-        
-          useAuthStore.setState({
-            user: refreshRes.data.user || useAuthStore.getState().user,
-            accessToken: refreshRes.data.access_token,
-            refreshToken: refreshRes.data.refresh_token || refreshToken, 
-          });
-
-          if (originalRequest.headers) {
-            originalRequest.headers.Authorization = `Bearer ${refreshRes.data.access_token}`;
-          }
-
-          return api_client(originalRequest);
-        } else {
-          console.log("Invalid refresh response, redirecting to login");
-          useAuthStore.getState().logout();
-          window.location.href = "/login";
+        if (!refreshPromise) {
+          refreshPromise = axios
+            .post<LoginResponse>(
+              `${API_URL}/auth/refresh`,
+              { refresh_token: refreshToken },
+              { headers: { "Content-Type": "application/json" } }
+            )
+            .then((res) => {
+              if (res.status === 200) {
+                useAuthStore.setState({
+                  user: res.data.user || useAuthStore.getState().user,
+                  accessToken: res.data.access_token,
+                  refreshToken: res.data.refresh_token || refreshToken,
+                });
+                api_client.defaults.headers.common["Authorization"] = `Bearer ${res.data.access_token}`;
+                return res.data.access_token;
+              } else {
+                throw new Error("Invalid refresh response");
+              }
+            })
+            .finally(() => {
+              refreshPromise = null;
+            });
         }
+
+        const newAccessToken = await refreshPromise;
+
+        if (originalRequest.headers) {
+          originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+        }
+
+        return api_client(originalRequest);
       } catch (refreshError) {
         console.error("Refresh token failed:", refreshError);
         useAuthStore.getState().logout();
@@ -83,9 +114,12 @@ api_client.interceptors.response.use(
         return Promise.reject(refreshError);
       }
     }
+
     return Promise.reject(error);
-  },
+  }
 );
+
+
 export function handleAxiosError(error: unknown, name: string): never {
   if (axios.isAxiosError(error)) {
     const msg = (error.response?.data as any)?.error || error.message;

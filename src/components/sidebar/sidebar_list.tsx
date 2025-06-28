@@ -59,7 +59,7 @@ export function SidebarList() {
         </div>
          </div>
         <CollapsibleContent className="p-2">
-          <ScrollArea className="h-[calc(100vh-200px)]">
+          <ScrollArea className="flex gap- h-[calc(100vh-200px)]">
             {lists.map((list) => (
               <ListCard key={list.id} list={list} />
             ))}

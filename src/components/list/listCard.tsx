@@ -40,7 +40,7 @@ export function ListCard({ list }: { list: List }) {
             onClick={handleListClick}
             className={[
               " flex items-center gap-2 px-2 rounded-md w-full justify-start  hover:bg-[#ECECEC] transition-color ",
-              isSelected ? "bg-[#ECECEC] " : "",
+              isSelected ? "bg-[#ECECEC]  " : "",
               "text-gray-700",
             ].join(" ")}
             title={list.title}
