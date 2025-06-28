@@ -5,6 +5,8 @@ import { Home, PanelRight } from "lucide-react";
 import { useSidebarStore } from "@/stores/sidebarStore";
 import { SidebarActions } from "./sidebar_actions";
 import { SidebarTask } from "./sidebar_task";
+import { AvatarAction } from "../user/avatar_action";
+import { cn } from "@/lib/utils";
 
 export default function Sidebar() {
   const { user } = useAuthStore();
@@ -23,41 +25,31 @@ export default function Sidebar() {
   return (
     <>
       <aside
-        className={`transition-all duration-300 ease-in-out border-r bg-white fixed md:static top-0 left-0 h-screen z-40
+        className={`transition-all duration-300 ease-in-out border-r bg-[#f8f8f6] fixed md:static top-0 left-0 h-screen z-40
         ${isOpen ? "w-[256px]" : "w-0 overflow-hidden"}`}
       >
-        <div className="h-full px-6 py-4 flex flex-col justify-between">
-          <div>
-            <div className="flex justify-between items-center mb-8">
-              <h1 className="text-xl font-semibold text-black">Beel</h1>
+        <div className="h-full w-full px-2 py-1 gap-4 flex flex-col "> 
+          <SidebarHeader  />
+          
+          <SidebarTask />
+          <SidebarList />
 
-              <div className="">
-                <button onClick={toggle}>
-                  <PanelRight className="w-6 h-6 rotate-180" />
-                </button>
-              </div>
-            </div>
-            <nav className="text-[14px]">
-              <a
-                href="/home"
-                className="flex items-center gap-2 mb-4 text-gray-800 hover:text-black"
-              >
-                <Home />
-                Home
-              </a>
-              <SidebarTask />
-              <SidebarList />
-            </nav>
-          </div>
-          {user ? (
-            <SidebarActions />
-          ) : (
-            <div className="text-center text-gray-500">
-              Please log in to access your account.
-            </div>
-          )}
         </div>
       </aside>
     </>
+  );
+}
+
+function SidebarHeader({className}:{className?:string}) {
+  return (
+    <header className={cn(className,"flex flex-col w-full items-between")}>
+      <div className="flex  hover:bg-[#ececec]  rounded-md   justify-between   w-full">
+        <AvatarAction/>
+        <button onClick={() => useSidebarStore.getState().toggle()}>
+          <PanelRight className="w-5  h-5" />
+        </button>
+        </div>
+      <h1 className="text-xl font-bold text-black mt-5">Beel</h1>
+    </header>
   );
 }

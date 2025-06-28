@@ -22,7 +22,7 @@ export function TaskCard({ task }: { task: Task }) {
 
   function handleSetTask(e: FormEvent) {
     e.preventDefault();
-    if (isCompleting) return; // Prevent opening task details while completing
+    if (isCompleting) return; 
     setTask(task.id!);
   }
 
@@ -30,13 +30,10 @@ export function TaskCard({ task }: { task: Task }) {
     e.preventDefault();
     e.stopPropagation();
     
-    // Set completing state for animation
     setIsCompleting(true);
     
-    // Show success toast
     toast.success("Task completed");
     
-    // Remove task after animation
     setTimeout(() => {
       removeTask(task.id!);
     }, 800);

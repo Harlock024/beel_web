@@ -1,52 +1,55 @@
 import { cn } from "@/lib/utils";
-import { ChevronsRight, List } from "lucide-react";
+import { ChevronsRight, List, Home } from "lucide-react";
 import { useState } from "react";
 import { FilterType, useFilterStore } from "@/stores/useFilterStore";
 
 export function SidebarTask({ className }: { className?: string }) {
-  const [selectedFilter, setSelectedFilter] = useState<
-    FilterType | undefined
-  >();
-  const taskNav: {
-    title: string;
-    href: string;
-    filter: FilterType;
-    icon: React.ReactNode;
-  }[] = [
+  const [selectedNavId, setSelectedNavId] = useState<string>("home");
+
+  const taskNav = [
     {
-      title: "Today",
-      icon: <List />,
-      href: "/task/today",
-      filter: "today",
+      id: "home",
+      title: "Home",
+      icon: <Home size={18} />,
+      href: "/home",
     },
     {
+      id: "today",
+      title: "Today",
+      icon: <List size={18} />,
+      href: "/task/today",
+      filter: "today" as FilterType,
+    },
+    {
+      id: "upcoming",
       title: "Upcoming",
-      icon: <ChevronsRight />,
+      icon: <ChevronsRight size={18} />,
       href: "/task/upcoming",
-      filter: "upcoming",
+      filter: "upcoming" as FilterType,
     },
   ];
-  const handleFilterChange = (filter: FilterType) => {
-    const newFilter = filter === selectedFilter ? filter : undefined;
-    setSelectedFilter(newFilter);
-    useFilterStore.getState().filterTasks({ dateFilter: filter });
-    console.log("Filter changed to:", filter);
+
+  const handleNavClick = (navItem: typeof taskNav[0]) => {
+    setSelectedNavId(navItem.id);
+    useFilterStore.getState().filterTasks({
+      dateFilter: navItem.filter,
+    });
   };
 
   return (
     <div className={cn(className, "")}>
-      <h2 className="text-xs uppercase tracking-wider text-gray-500 font-medium mb-2">
-        tasks
-      </h2>
-      <div className="space-y-1   ">
+      <div className="flex flex-col gap-2">
         {taskNav.map((item) => (
           <a
             href={item.href}
-            onClick={() => handleFilterChange(item.filter)}
-            key={item.title}
-            className={`flex items-center gap-3 px-2 py-2 rounded-sm w-full justify-start text-gray-700 hover:bg-gray-200  transition-colors ${
-              selectedFilter === item.filter ? "bg-gray-300" : ""
-            }`}
+            onClick={(e) => {
+              handleNavClick(item);
+            }}
+            key={item.id}
+            className={cn(
+              "  flex items-center gap-3 px-3 py-2 rounded-md w-full justify-start text-gray-700 hover:bg-gray-200 transition-colors",
+              selectedNavId === item.id ? "bg-gray-200 font-medium" : ""
+            )}
           >
             <span className="text-gray-600">{item.icon}</span>
             <span>{item.title}</span>

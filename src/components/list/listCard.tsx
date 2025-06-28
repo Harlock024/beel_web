@@ -8,6 +8,9 @@ import {
 } from "../ui/context-menu";
 import { FormEvent, useState } from "react";
 import { ListForm } from "./list_form";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
+import { Ellipsis } from "lucide-react";
 
 export function ListCard({ list }: { list: List }) {
   const [isEditingList, setIsEditingList] = useState(false);
@@ -26,18 +29,18 @@ export function ListCard({ list }: { list: List }) {
     deleteList(list.id!);
   };
 
+
+
   const isSelected = selectedListId === list.id;
 
   return (
     <>
-      <ContextMenu>
-        <ContextMenuTrigger>
-          <a
+        <a
             href={`/list/${list.id}`}
             onClick={handleListClick}
             className={[
-              "w-full flex items-center gap-3 px-4 py-3 rounded-md transition-all truncate ",
-              isSelected ? "bg-gray-200 " : "hover:bg-gray-200 ",
+              " flex items-center gap-2 px-2 rounded-md w-full justify-start  hover:bg-[#ECECEC] transition-color ",
+              isSelected ? "bg-[#ECECEC] " : "",
               "text-gray-700",
             ].join(" ")}
             title={list.title}
@@ -47,19 +50,45 @@ export function ListCard({ list }: { list: List }) {
               style={{ backgroundColor: list.color }}
               title={`Color: ${list.color}`}
             ></div>
-
-            <span className="flex-1 truncate font-medium">{list.title}</span>
-          </a>
-        </ContextMenuTrigger>
-
-        <ContextMenuContent>
-          <ContextMenuItem onClick={handleEditList}>Edit List</ContextMenuItem>
-          <ContextMenuItem onClick={handleDeleteList}>
-            Delete List
-          </ContextMenuItem>
-        </ContextMenuContent>
-      </ContextMenu>
-
+            <span className="flex-1 truncate font-medium">{list.title}</span>   
+        <div className="flex-shrink-0 ml-2 opacity-0 group-hover:opacity-100 transition-opacity">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button 
+                size="sm" 
+                className="h-8 w-8 p-0" 
+                onClick={(e) => e.stopPropagation()}
+              >
+                <Ellipsis className="h-5 w-5 text-black hover:text-gray-600" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent 
+              className="w-48" 
+              align="end"
+              onCloseAutoFocus={(e) => e.preventDefault()}
+            >
+              <DropdownMenuItem 
+                onClick={(e) => {
+                  e.stopPropagation(); 
+                  handleEditList();
+                }}
+              >
+                Edit
+              </DropdownMenuItem>
+              <DropdownMenuItem 
+                onClick={(e) => {
+                  e.stopPropagation();
+                
+                  handleDeleteList();
+                }}
+                className="text-red-500 focus:text-red-500"
+              >
+                Delete
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+        </a>
       {isEditingList && (
         <ListForm
           list={list}
@@ -67,6 +96,6 @@ export function ListCard({ list }: { list: List }) {
           isOpen={isEditingList}
         />
       )}
-    </>
+    </> 
   );
 }

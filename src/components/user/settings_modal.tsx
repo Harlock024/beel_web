@@ -1,26 +1,73 @@
 import { User } from "@/types/user";
 import { Bell, Palette, Settings, Shield, UserIcon, X } from "lucide-react";
-import { useState } from "react";
+import { use, useEffect, useRef, useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useSettingsStore } from "@/stores/useSettingsStore";
+import { useAuthStore } from "@/stores/useAuthStore";
 
 interface SettingsModalProps {
   onComplete: () => void;
   isOpen: boolean;
   currentUser: User;
 }
-
 type SettingSection = "general" | "account" | "security" | "notifications";
 
-export function SettingsModal({
-  onComplete,
-  isOpen = true,
-  currentUser,
-}: SettingsModalProps) {
+export function SettingsModal() {
   const [activeSection, setActiveSection] = useState<SettingSection>("general");
+  const {isOpen, setIsOpen} = useSettingsStore();
+  const {user} = useAuthStore();
 
+  const [animateIn, setAnimateIn] = useState(false);
+  const closeRef = useRef<HTMLDivElement>(null);
+
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (closeRef.current && !closeRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [setIsOpen]);
+
+
+  useEffect(() => {
+    if (isOpen) {
+      setTimeout(() => setAnimateIn(true), 10);
+    } else {
+      setAnimateIn(false);
+    }
+  }, [isOpen]);
+
+  const onComplete = () => {
+    setAnimateIn(false);
+    setTimeout(() => setIsOpen(false), 150);
+  };
+
+  if (!user) {
+    return null; 
+  }
+  if (!isOpen) return null;
+  
   return (
-    <section className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
-      <div className="bg-card rounded-lg w-full max-w-4xl h-[600px] flex overflow-hidden">
+    <section 
+      className={`
+        fixed inset-0 z-50 flex items-center justify-center p-4
+        transition-all duration-100 ease-in-out
+        ${animateIn ? 'bg-black/50 opacity-100' : 'bg-black/0 opacity-0'}
+      `}
+    > 
+      <div 
+        ref={closeRef}
+        className={`
+          bg-card rounded-lg w-full max-w-4xl h-[600px] flex overflow-hidden
+          transition-transform duration-150 ease-out
+          ${animateIn ? 'translate-y-0 opacity-100 scale-100' : 'translate-y-8 opacity-0 scale-95'}
+        `}
+      >
         <SettingSidebar
           onComplete={onComplete}
           activeSection={activeSection}
@@ -29,7 +76,7 @@ export function SettingsModal({
         <div className="flex-1 flex flex-col">
           <SettingHeader activeSection={activeSection} />
           <div className="flex-1 overflow-y-auto p-6">
-            <SettingContent activeSection={activeSection} user={currentUser} />
+            <SettingContent activeSection={activeSection} user={user} />
           </div>
           <SettingFooter />
         </div>
