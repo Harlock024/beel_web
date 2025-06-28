@@ -11,8 +11,7 @@ export function ListCard({ list }: { list: List }) {
   const [isEditingList, setIsEditingList] = useState(false);
   const { deleteList, setSelectedList, selectedListId } = useListStore();
 
-  function handleListClick(e: FormEvent<HTMLAnchorElement>) {
-    e.preventDefault(); // Corregido de e.defaultPrevented
+  function handleListClick() {
     setSelectedList(list.id!);
   }
 
