@@ -71,7 +71,7 @@ api_client.interceptors.response.use(
 
       if (!refreshToken) {
         useAuthStore.getState().logout();
-        window.location.href = "/login";
+        window.location.href = "/auth";
         return Promise.reject(error);
       }
       try {
