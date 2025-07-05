@@ -7,7 +7,7 @@ export function Protected({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (!isLoading && !user) {
-      window.location.href = "/login"; 
+      window.location.href = "/auth"; 
     }
   }, [user, isLoading]);
 

@@ -48,7 +48,7 @@ export function AvatarAction() {
               <span className="text-xs text-gray-500">{user.email || 'No email provided'}</span>
             </div>
           </div>
-          <Button 
+          {/* <Button 
             variant="outline" 
             size="sm" 
             onClick={() =>{ 
@@ -60,7 +60,7 @@ export function AvatarAction() {
           >
             <Settings className="h-4 w-4 text-gray-500" />
              Settings
-          </Button>
+          </Button> */}
           
         </div>
         <DropdownMenuSeparator />

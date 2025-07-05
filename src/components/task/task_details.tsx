@@ -228,7 +228,6 @@ export function TaskDetails({ className }: TaskDetailsProps) {
               }
             />
 
-            
             <TaskDetailsActions
               currentTask={currentTask}
               lists={lists}
@@ -254,6 +253,13 @@ export function TaskDetails({ className }: TaskDetailsProps) {
                 placeholder="Write something about this task..."
               />
             </form>
+            
+            <TaskDetailsFooter 
+              hasChanges={hasTaskChanged()}
+              isSaving={isSaving}
+              onSave={handleEditTask}
+              onRemove={handleRemoveTask}
+            />
           </div>
         </div>
       )}
@@ -360,6 +366,49 @@ function TaskDetailsActions({
             />
           </PopoverContent>
         </Popover>
+      </div>
+    </div>
+  );
+}
+
+function TaskDetailsFooter({
+  hasChanges,
+  isSaving,
+  onSave,
+  onRemove,
+}: {
+  hasChanges: boolean;
+  isSaving: boolean;
+  onSave: () => void;
+  onRemove: () => void;
+}) {
+  return (
+    <div className="px-6 py-4 border-t mt-auto sticky bottom-0 bg-white z-10 flex items-center justify-between gap-4">
+      <Button
+        variant="destructive"
+        size="sm"
+        onClick={onRemove}
+        className="text-sm"
+        disabled={isSaving}
+      >
+        Remove Task
+      </Button>
+      
+      <div className="flex items-center gap-2">
+        {hasChanges && !isSaving && (
+          <span className="text-xs text-muted-foreground">
+            Press Ctrl+S to save
+          </span>
+        )}
+        <Button
+          variant="default"
+          size="sm"
+          onClick={onSave}
+          disabled={!hasChanges || isSaving}
+          className="text-sm"
+        >
+          {isSaving ? "Saving..." : "Save Changes"}
+        </Button>
       </div>
     </div>
   );

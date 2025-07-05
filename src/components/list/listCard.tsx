@@ -14,7 +14,6 @@ export function ListCard({ list }: { list: List }) {
   function handleListClick() {
     setSelectedList(list.id!);
   }
-
   const handleEditList = () => {
     setIsEditingList(!isEditingList);
   };

@@ -44,7 +44,6 @@ export function SidebarTask({ className }: { className?: string }) {
           <a
             href={item.href}
             onClick={(e) => {
-              e.preventDefault();
               handleNavClick(item);
             }}
             key={item.id}
