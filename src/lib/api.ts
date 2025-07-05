@@ -41,7 +41,7 @@ api_client.interceptors.request.use(
 api_client.interceptors.request.use(
   async (config) => {
     if (typeof window !== "undefined" && refreshPromise) {
-      await refreshPromise; // Esperar a que termine el refresh antes de continuar
+      await refreshPromise; 
     }
     const { accessToken } = useAuthStore.getState();
     if (accessToken) {
@@ -110,7 +110,7 @@ api_client.interceptors.response.use(
       } catch (refreshError) {
         console.error("Refresh token failed:", refreshError);
         useAuthStore.getState().logout();
-        window.location.href = "/login";
+        window.location.href = "/auth";
         return Promise.reject(refreshError);
       }
     }
