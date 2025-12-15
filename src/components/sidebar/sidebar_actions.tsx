@@ -10,8 +10,6 @@ import {
 } from "../ui/dropdown-menu";
 import { useAuthStore } from "@/stores/useAuthStore";
 
-
-
 export function SidebarActions() {
   const [newList, setIsNewList] = useState(false);
   const [isSettingOpen, setSettingOpen] = useState(false);

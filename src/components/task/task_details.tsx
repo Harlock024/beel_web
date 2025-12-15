@@ -6,12 +6,22 @@ import { Button } from "../ui/button";
 import { format, set } from "date-fns";
 import { CalendarDemo } from "../calendar/CalentadarDemo";
 import { useListStore } from "@/stores/list_store";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import toast from "react-hot-toast";
 import { List } from "@/types/list";
 import { useSidebarStore } from "@/stores/sidebarStore";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 type TaskDetailsProps = {
   className?: string;
@@ -22,8 +32,8 @@ export function TaskDetails({ className }: TaskDetailsProps) {
   const { lists } = useListStore();
   const { setIsOpen: setSidebarOpen } = useSidebarStore();
   const [currentTask, setCurrentTask] = useState<Task | undefined>(task);
-  const [isOverlay, setIsOverlay] = useState(false); 
-  const [isSaving, setIsSaving] = useState(false); 
+  const [isOverlay, setIsOverlay] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const sidebarRef = useRef<HTMLDivElement>(null);
   const widthRef = useRef(400);
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
@@ -43,17 +53,17 @@ export function TaskDetails({ className }: TaskDetailsProps) {
 
       const newWidth = Math.min(
         Math.max(startWidth + (startX - e.clientX), 300),
-        window.innerWidth * 0.8, 
+        window.innerWidth * 0.8,
       );
 
       sidebarRef.current.style.width = `${newWidth}px`;
       widthRef.current = newWidth;
 
       if (newWidth > window.innerWidth / 2) {
-        setIsOverlay(true); 
-        setSidebarOpen(false); 
+        setIsOverlay(true);
+        setSidebarOpen(false);
       } else {
-        setIsOverlay(false); 
+        setIsOverlay(false);
         setSidebarOpen(true);
       }
     };
@@ -76,26 +86,24 @@ export function TaskDetails({ className }: TaskDetailsProps) {
     }
   }, [task]);
 
-    useEffect(() => {
-      const handleKeyboardSave = (e: KeyboardEvent) => {
-        if ((e.ctrlKey || e.metaKey) && e.key === "s") {
-          e.preventDefault();
-          if (!isSaving && hasTaskChanged()) {
-            handleEditTask();
-           
-          }
+  useEffect(() => {
+    const handleKeyboardSave = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === "s") {
+        e.preventDefault();
+        if (!isSaving && hasTaskChanged()) {
+          handleEditTask();
         }
-      };
-      window.addEventListener("keydown", handleKeyboardSave);
-      return () => {
-        window.removeEventListener("keydown", handleKeyboardSave);
-      };
-    }, [currentTask, task, isSaving]);
-
+      }
+    };
+    window.addEventListener("keydown", handleKeyboardSave);
+    return () => {
+      window.removeEventListener("keydown", handleKeyboardSave);
+    };
+  }, [currentTask, task, isSaving]);
 
   const handleEditTask = async () => {
-    if (!currentTask || isSaving) return; 
-    setIsSaving(true); 
+    if (!currentTask || isSaving) return;
+    setIsSaving(true);
     const toastId = toast.loading("Saving changes...");
     try {
       const changes: Partial<Task> = {};
@@ -106,7 +114,7 @@ export function TaskDetails({ className }: TaskDetailsProps) {
         if (!trimmedTitle) {
           toast.error("Title cannot be empty");
           toast.dismiss(toastId);
-          setIsSaving(false); 
+          setIsSaving(false);
           return;
         }
         changes.title = trimmedTitle;
@@ -133,10 +141,8 @@ export function TaskDetails({ className }: TaskDetailsProps) {
       toast.success("Saved changes", { id: toastId });
     } catch (error) {
       toast.error("Error saving changes", { id: toastId });
-    }
-    finally {
-      setIsSaving(false);         
-  
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -169,15 +175,28 @@ export function TaskDetails({ className }: TaskDetailsProps) {
       const target = event.target as HTMLElement;
 
       const isClickInsideSidebar = sidebarRef.current.contains(target);
-      
-      const isSelectContent = !!target.closest(['[data-radix-select-content]',"[data-radix-select-trigger-content",["data-radix-select-value"]].join(', '));
-      const isPopoverContent = !!target.closest('[data-radix-popper-content-wrapper]');
-      const isAnyRadixPortal = !!target.closest('[data-radix-portal]');
-      
-      if (isClickInsideSidebar || isSelectContent || isPopoverContent || isAnyRadixPortal) {
+
+      const isSelectContent = !!target.closest(
+        [
+          "[data-radix-select-content]",
+          "[data-radix-select-trigger-content",
+          ["data-radix-select-value"],
+        ].join(", "),
+      );
+      const isPopoverContent = !!target.closest(
+        "[data-radix-popper-content-wrapper]",
+      );
+      const isAnyRadixPortal = !!target.closest("[data-radix-portal]");
+
+      if (
+        isClickInsideSidebar ||
+        isSelectContent ||
+        isPopoverContent ||
+        isAnyRadixPortal
+      ) {
         return;
       }
-      
+
       closeTask();
     };
 
@@ -194,10 +213,9 @@ export function TaskDetails({ className }: TaskDetailsProps) {
     if (!currentTask || !task) return false;
     if (currentTask.id !== task.id) return true;
 
-
     return (
       currentTask.title.trim() !== task.title.trim() ||
-     currentTask.description?.trim() !== task.description?.trim() || 
+      currentTask.description?.trim() !== task.description?.trim() ||
       (currentTask.due_date || "") !== (task.due_date || "") ||
       (currentTask.list_id || "") !== (task.list_id || "")
     );
@@ -209,7 +227,7 @@ export function TaskDetails({ className }: TaskDetailsProps) {
           ref={sidebarRef}
           className={cn(
             "top-0 h-screen z-50 bg-white shadow-lg border-l transition-transform duration-300",
-            isOverlay ? "fixed right-0" : "absolute right-0", 
+            isOverlay ? "fixed right-0" : "absolute right-0",
             className,
           )}
           style={{ width: `${widthRef.current}px` }}
@@ -224,7 +242,9 @@ export function TaskDetails({ className }: TaskDetailsProps) {
               task={currentTask}
               onClose={closeTask}
               onUpdateTitle={(title) =>
-                setCurrentTask((prev) => (prev ? { ...prev, title } : undefined))
+                setCurrentTask((prev) =>
+                  prev ? { ...prev, title } : undefined,
+                )
               }
             />
 
@@ -253,8 +273,8 @@ export function TaskDetails({ className }: TaskDetailsProps) {
                 placeholder="Write something about this task..."
               />
             </form>
-            
-            <TaskDetailsFooter 
+
+            <TaskDetailsFooter
               hasChanges={hasTaskChanged()}
               isSaving={isSaving}
               onSave={handleEditTask}
@@ -282,10 +302,20 @@ function TaskDetailsHeader({
     <div className="px-6 py-4">
       <div className="flex  items-center  mb-4">
         <div className="flex  w-full items-star justify-between  gap-2">
-          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={onClose}>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8"
+            onClick={onClose}
+          >
             <X className="w-4 h-4" />
           </Button>
-          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={onExpand}>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8"
+            onClick={onExpand}
+          >
             <Expand className="w-4 h-4" />
           </Button>
         </div>
@@ -296,7 +326,7 @@ function TaskDetailsHeader({
         value={task?.title || ""}
         onChange={(e) => onUpdateTitle(e.target.value)}
         placeholder="Task name"
-        className="text-2xl font-semibold w-full bg-transparent outline-none border-none 
+        className="text-2xl font-semibold w-full bg-transparent outline-none border-none
                    focus:ring-0 border-b border-transparent focus:border-primary transition-all"
       />
     </div>
@@ -309,7 +339,7 @@ function TaskDetailsActions({
   handleDateChange,
 }: {
   currentTask: Task | undefined;
-  lists: List[]
+  lists: List[];
   handleListChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
   handleDateChange: (date: Date | undefined) => void;
 }) {
@@ -317,26 +347,31 @@ function TaskDetailsActions({
     <div className="px-6 py-4 space-y-6 border-b">
       <div className="flex justify-start gap-2 items-center space-y-2">
         <label className="block text-sm  font-medium mb-1">List</label>
-      
-        <div className="w-full" >
-        <Select   value={currentTask?.list_id || ""} onValueChange={(value) => {
-          handleListChange({ target: { value } } as React.ChangeEvent<HTMLSelectElement>);
-        }}>
-          <SelectTrigger  className="w-full">
-            <SelectValue placeholder="Select a list"/>
-          </SelectTrigger>
-          <SelectContent>
-            {lists.map((list) => (
-              <SelectItem
-                key={list.id}
-                value={list.id!}
-                className="cursor-pointer hover:bg-gray-100"
-              >
-               {list.title}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+
+        <div className="w-full">
+          <Select
+            value={currentTask?.list_id || ""}
+            onValueChange={(value) => {
+              handleListChange({
+                target: { value },
+              } as React.ChangeEvent<HTMLSelectElement>);
+            }}
+          >
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Select a list" />
+            </SelectTrigger>
+            <SelectContent>
+              {lists.map((list) => (
+                <SelectItem
+                  key={list.id}
+                  value={list.id!}
+                  className="cursor-pointer hover:bg-gray-100"
+                >
+                  {list.title}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
       </div>
 
@@ -393,7 +428,7 @@ function TaskDetailsFooter({
       >
         Remove Task
       </Button>
-      
+
       <div className="flex items-center gap-2">
         {hasChanges && !isSaving && (
           <span className="text-xs text-muted-foreground">
