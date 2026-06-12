@@ -44,11 +44,11 @@ export function ModalEditTaskForm({
         className="bg-card rounded-lg p-6 w-full max-w-md shadow-xl"
       >
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-lg font-semibold">Editar Lista</h2>
+          <h2 className="text-lg font-semibold">Edit List</h2>
           <button
             type="button"
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600"
+            className="text-muted-foreground hover:text-foreground"
           >
             <X size={20} />
           </button>
@@ -67,10 +67,10 @@ export function ModalEditTaskForm({
                 style={{ backgroundColor: color }}
               />
             </PopoverTrigger>
-            <PopoverContent className="w-auto p-3 border-gray-200">
+            <PopoverContent className="w-auto p-3 border-border">
               <div className="space-y-3">
                 <HexColorPicker color={color} onChange={setColor} />
-                <div className="text-xs text-center text-gray-500 font-medium pt-1">
+                <div className="text-xs text-center text-muted-foreground font-medium pt-1">
                   {color.toUpperCase()}
                 </div>
               </div>
@@ -80,7 +80,7 @@ export function ModalEditTaskForm({
         <div className="flex justify-end">
           <button
             type="submit"
-            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+            className="bg-primary text-primary-foreground px-4 py-2 rounded hover:bg-primary/90"
           >
             Save changes
           </button>

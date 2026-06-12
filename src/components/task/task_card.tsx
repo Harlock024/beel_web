@@ -42,7 +42,7 @@ export function TaskCard({ task }: { task: Task }) {
   return (
     <div 
       className={cn(
-        "group w-full flex mt-2 items-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-300",
+        "group w-full flex mt-2 items-center p-2 hover:bg-muted/50 rounded-lg transition-all duration-300",
         isCompleting && "opacity-50 translate-x-2"
       )}
     >
@@ -65,7 +65,7 @@ export function TaskCard({ task }: { task: Task }) {
       <button
         onClick={handleSetTask}
         className={cn(
-          "text-gray-700 w-full ml-3 py-2.5 px-3 rounded-md flex items-start justify-between transition-all",
+          "text-foreground/80 w-full ml-3 py-2.5 px-3 rounded-md flex items-start justify-between transition-all",
           isCompleting && "line-through"
         )}
       >
@@ -74,21 +74,21 @@ export function TaskCard({ task }: { task: Task }) {
             <Label
               htmlFor={`task-${task.id}`}
               className={cn(
-                "font-medium text-sm md:text-base text-gray-800",
-                isCompleting && "line-through text-gray-400"
+                "font-medium text-sm md:text-base text-foreground",
+                isCompleting && "line-through text-muted-foreground"
               )}
             >
               {task.title}
             </Label>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2 text-xs text-gray-500">
+          <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
             {task.due_date && (
               <span
                 className={`flex items-center gap-1 px-2 py-1 rounded-md ${
                   new Date(task.due_date) < new Date() && !task.is_completed
-                    ? "bg-red-50 text-red-600"
-                    : "bg-gray-100"
+                    ? "bg-destructive/10 text-destructive"
+                    : "bg-muted"
                 }`}
               >
                 <Calendar className="h-3 w-3" />
@@ -125,7 +125,7 @@ export function TaskCard({ task }: { task: Task }) {
                 onClick={(e) => e.stopPropagation()}
                 disabled={isCompleting}
               >
-                <Ellipsis className="size-5 text-gray-400 hover:text-gray-600" />
+                <Ellipsis className="size-5 text-muted-foreground hover:text-foreground" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent 
@@ -146,7 +146,7 @@ export function TaskCard({ task }: { task: Task }) {
                   e.stopPropagation();
                   removeTask(task.id!);
                 }}
-                className="text-red-500 focus:text-red-500"
+                className="text-destructive focus:text-destructive"
               >
                 Delete
               </DropdownMenuItem>

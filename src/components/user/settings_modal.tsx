@@ -129,7 +129,7 @@ function SettingSidebar({
           className="p-1.5 rounded-full hover:bg-accent transition-all duration-200 group"
           onClick={onComplete}
         >
-          <X className="h-4 w-4 text-gray-500 group-hover:text-gray-700 transition-colors" />
+          <X className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors" />
         </button>
       </div>
 

@@ -28,7 +28,7 @@ export function SidebarActions() {
             onClick={() => {
               HandletoggleNewList();
             }}
-            className="flex items-center cursor-pointer text-sm text-gray-700 hover:text-gray-900"
+            className="flex items-center cursor-pointer text-sm text-foreground/80 hover:text-foreground"
           >
             <Plus className="w-4 h-4 mr-2 inline-block" />
             New List

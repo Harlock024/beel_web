@@ -479,7 +479,7 @@ function TaskDetailsActions({
                 <SelectItem
                   key={list.id}
                   value={list.id!}
-                  className="cursor-pointer hover:bg-gray-100"
+                  className="cursor-pointer hover:bg-accent"
                 >
                   {list.title}
                 </SelectItem>

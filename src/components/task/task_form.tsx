@@ -30,7 +30,7 @@ export function TaskForm() {
     <div className="w-full">
       <form onSubmit={handleAddTask} className="flex flex-col gap-4 ">
         <div className="justify-start shadow-inner rounded-md px-4 py-2 items-center flex space-x-2">
-          <Plus className="text-gray-400 h-5 w-5" />
+          <Plus className="text-muted-foreground h-5 w-5" />
           <input
             className="border-none w-full ring-0 focus:ring-0 focus:outline-none"
             type="text"

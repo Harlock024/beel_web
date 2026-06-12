@@ -84,7 +84,7 @@ export function LoginForm({
       </div>
       <div className="grid gap-6">
         {generalError && (
-          <div className="text-red-600 text-sm text-center">{generalError}</div>
+          <div className="text-destructive text-sm text-center">{generalError}</div>
         )}
         <div className="grid gap-3">
           <Label htmlFor="email">Email</Label>
@@ -99,7 +99,7 @@ export function LoginForm({
             aria-describedby={emailError ? "email-error" : undefined}
           />
           {emailError && (
-            <span id="email-error" className="text-xs text-red-600">{emailError}</span>
+            <span id="email-error" className="text-xs text-destructive">{emailError}</span>
           )}
         </div>
         <div className="grid gap-3">
@@ -115,7 +115,7 @@ export function LoginForm({
             autoComplete="current-password"
           />
           {passwordError && (
-            <span id="password-error" className="text-xs text-red-600">{passwordError}</span>
+            <span id="password-error" className="text-xs text-destructive">{passwordError}</span>
           )}
         </div>
         <Button type="submit" className="w-full" disabled={isLoading}>
