@@ -683,10 +683,12 @@ function TagSection({ task }: { task: Task }) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [localTags, setLocalTags] = useState<Tag[]>(task.tags || []);
-  const [showCreate, setShowCreate] = useState(false);
-  const [newName, setNewName] = useState("");
-  const [newColor, setNewColor] = useState("#6b7280");
   const inputRef = useRef<HTMLInputElement>(null);
+
+  const TAG_COLORS = [
+    "#ef4444", "#f97316", "#eab308", "#22c55e",
+    "#06b6d4", "#3b82f6", "#8b5cf6", "#ec4899", "#6b7280",
+  ];
 
   useEffect(() => {
     fetchTags();
@@ -701,6 +703,11 @@ function TagSection({ task }: { task: Task }) {
       t.name.toLowerCase().includes(search.toLowerCase()) &&
       !localTags.some((a) => a.id === t.id),
   );
+
+  const exactMatch = allTags.some(
+    (t) => t.name.toLowerCase() === search.toLowerCase(),
+  );
+  const showCreate = search.trim() && !exactMatch;
 
   const handleAssign = async (tagId: string) => {
     const tag = allTags.find((t) => t.id === tagId);
@@ -717,23 +724,16 @@ function TagSection({ task }: { task: Task }) {
   };
 
   const handleCreateAndAssign = async () => {
-    const name = newName.trim();
+    const name = search.trim();
     if (!name) return;
-    const created = await createTag(name, newColor);
+    const color = TAG_COLORS[Math.floor(Math.random() * TAG_COLORS.length)];
+    const created = await createTag(name, color);
     if (created && task.id) {
       setLocalTags((prev) => [...prev, created]);
       await assignTag(task.id, created.id!);
     }
-    setNewName("");
-    setNewColor("#6b7280");
-    setShowCreate(false);
     setSearch("");
   };
-
-  const TAG_COLORS = [
-    "#ef4444", "#f97316", "#eab308", "#22c55e",
-    "#06b6d4", "#3b82f6", "#8b5cf6", "#ec4899", "#6b7280",
-  ];
 
   return (
     <div className="px-6 py-4 border-t">
@@ -752,10 +752,7 @@ function TagSection({ task }: { task: Task }) {
                 ref={inputRef}
                 type="text"
                 value={search}
-                onChange={(e) => {
-                  setSearch(e.target.value);
-                  setShowCreate(false);
-                }}
+                onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search tags..."
                 className="w-full px-2 py-1.5 text-sm bg-transparent border border-border rounded-md outline-none focus:ring-1 focus:ring-ring"
                 autoFocus
@@ -783,7 +780,7 @@ function TagSection({ task }: { task: Task }) {
                         {tag.name}
                       </button>
                     ))
-                  ) : search ? (
+                  ) : !showCreate ? (
                     <span className="block px-2 py-1.5 text-xs text-muted-foreground">
                       No matching tags
                     </span>
@@ -791,62 +788,13 @@ function TagSection({ task }: { task: Task }) {
                 </div>
               )}
 
-              {search && !showCreate && (
+              {showCreate && (
                 <button
-                  onClick={() => setShowCreate(true)}
-                  className="w-full text-left px-2 py-1.5 text-sm rounded-md hover:bg-accent transition-colors text-primary mt-1"
+                  onClick={handleCreateAndAssign}
+                  className="w-full text-left px-2 py-1.5 text-sm rounded-md hover:bg-accent transition-colors text-primary border-t pt-2 mt-1"
                 >
                   Create "{search}"
                 </button>
-              )}
-
-              {showCreate && (
-                <div className="border-t pt-2 space-y-2">
-                  <input
-                    type="text"
-                    value={newName}
-                    onChange={(e) => setNewName(e.target.value)}
-                    placeholder="Tag name..."
-                    className="w-full px-2 py-1.5 text-sm bg-transparent border border-border rounded-md outline-none focus:ring-1 focus:ring-ring"
-                    autoFocus
-                  />
-                  <div className="flex gap-1 flex-wrap">
-                    {TAG_COLORS.map((color) => (
-                      <button
-                        key={color}
-                        type="button"
-                        onClick={() => setNewColor(color)}
-                        className="w-5 h-5 rounded-full border-2 transition-all"
-                        style={{
-                          backgroundColor: color,
-                          borderColor:
-                            newColor === color ? "var(--foreground)" : "transparent",
-                          transform: newColor === color ? "scale(1.15)" : "scale(1)",
-                        }}
-                      />
-                    ))}
-                  </div>
-                  <div className="flex gap-1">
-                    <Button
-                      size="sm"
-                      onClick={handleCreateAndAssign}
-                      disabled={!newName.trim()}
-                      className="flex-1"
-                    >
-                      Create & Assign
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => {
-                        setShowCreate(false);
-                        setNewName("");
-                      }}
-                    >
-                      Cancel
-                    </Button>
-                  </div>
-                </div>
               )}
             </div>
           </PopoverContent>
