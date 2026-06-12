@@ -698,29 +698,29 @@ function TagSection({ task }: { task: Task }) {
     setLocalTags(task.tags || []);
   }, [task.tags, task.id]);
 
-  const unassignedTags = allTags.filter(
-    (t) =>
-      t.name.toLowerCase().includes(search.toLowerCase()) &&
-      !localTags.some((a) => a.id === t.id),
+  const filteredTags = allTags.filter((t) =>
+    t.name.toLowerCase().includes(search.toLowerCase()),
   );
+
+  const isAssigned = (tagId: string) =>
+    localTags.some((a) => a.id === tagId);
 
   const exactMatch = allTags.some(
     (t) => t.name.toLowerCase() === search.toLowerCase(),
   );
   const showCreate = search.trim() && !exactMatch;
 
-  const handleAssign = async (tagId: string) => {
-    const tag = allTags.find((t) => t.id === tagId);
-    if (!tag || !task.id) return;
-    setLocalTags((prev) => [...prev, tag]);
-    await assignTag(task.id, tagId);
-    setSearch("");
-  };
-
-  const handleUnassign = async (tagId: string) => {
+  const handleToggle = async (tagId: string) => {
     if (!task.id) return;
-    setLocalTags((prev) => prev.filter((t) => t.id !== tagId));
-    await unassignTag(task.id, tagId);
+    if (isAssigned(tagId)) {
+      setLocalTags((prev) => prev.filter((t) => t.id !== tagId));
+      await unassignTag(task.id, tagId);
+    } else {
+      const tag = allTags.find((t) => t.id === tagId);
+      if (!tag) return;
+      setLocalTags((prev) => [...prev, tag]);
+      await assignTag(task.id, tagId);
+    }
   };
 
   const handleCreateAndAssign = async () => {
@@ -766,18 +766,22 @@ function TagSection({ task }: { task: Task }) {
 
               {allTags.length > 0 && (
                 <div className="max-h-40 overflow-y-auto space-y-1">
-                  {unassignedTags.length > 0 ? (
-                    unassignedTags.map((tag) => (
+                  {filteredTags.length > 0 ? (
+                    filteredTags.map((tag) => (
                       <button
                         key={tag.id}
-                        onClick={() => handleAssign(tag.id!)}
+                        onClick={() => handleToggle(tag.id!)}
                         className="w-full text-left px-2 py-1.5 text-sm rounded-md hover:bg-accent transition-colors flex items-center gap-2"
                       >
                         <span
                           className="w-2.5 h-2.5 rounded-full flex-shrink-0"
                           style={{ backgroundColor: tag.color }}
                         />
-                        {tag.name}
+                        <span className="flex-1">{tag.name}</span>
+                        <Checkbox
+                          checked={isAssigned(tag.id!)}
+                          className="h-4 w-4 pointer-events-none"
+                        />
                       </button>
                     ))
                   ) : !showCreate ? (
@@ -817,7 +821,7 @@ function TagSection({ task }: { task: Task }) {
             />
             {tag.name}
             <button
-              onClick={() => handleUnassign(tag.id!)}
+              onClick={() => handleToggle(tag.id!)}
               className="ml-0.5 hover:opacity-70 transition-opacity"
             >
               <X className="h-3 w-3" />
