@@ -47,22 +47,10 @@ export async function DeleteTag(id: string): Promise<void> {
 }
 
 // Task-tag assignment
-export async function FetchTaskTags(taskId: string): Promise<Tag[]> {
-  try {
-    const response = await api_client.get<{ tags: Tag[] }>(
-      `/api/tasks/${taskId}/tags`,
-    );
-    return response.data.tags;
-  } catch (error) {
-    handleAxiosError(error, "FetchTaskTags");
-  }
-}
-
 export async function AssignTag(taskId: string, tagId: string): Promise<Tag> {
   try {
     const response = await api_client.post<{ tag: Tag }>(
-      `/api/tasks/${taskId}/tags`,
-      { tag_id: tagId },
+      `/api/tasks/${taskId}/tags/${tagId}`,
     );
     return response.data.tag;
   } catch (error) {

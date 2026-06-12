@@ -674,23 +674,20 @@ function SubtaskSection({ task }: { task: Task }) {
 function TagSection({ task }: { task: Task }) {
   const {
     tags: allTags,
-    taskTags,
     fetchTags,
     createTag,
     assignTag,
     unassignTag,
-    fetchTaskTags,
   } = useTagStore();
   const [open, setOpen] = useState(false);
   const [newTagName, setNewTagName] = useState("");
   const [search, setSearch] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const assignedTags = taskTags.get(task.id!) || task.tags || [];
+  const assignedTags = task.tags || [];
 
   useEffect(() => {
     fetchTags();
-    if (task.id) fetchTaskTags(task.id);
   }, [task.id]);
 
   const filteredTags = allTags.filter(
