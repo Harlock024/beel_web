@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import { ChevronsRight, List, Home, Tags } from "lucide-react";
+import { ChevronsRight, List, Home, Tags, LayoutGrid } from "lucide-react";
 import { useState } from "react";
 import { FilterType, useFilterStore } from "@/stores/useFilterStore";
 
@@ -26,6 +26,12 @@ export function SidebarTask({ className }: { className?: string }) {
       icon: <ChevronsRight size={18} />,
       href: "/task/upcoming",
       filter: "upcoming" as FilterType,
+    },
+    {
+      id: "kanban",
+      title: "Kanban",
+      icon: <LayoutGrid size={18} />,
+      href: "/kanban",
     },
     {
       id: "filters-tags",

@@ -10,6 +10,8 @@ export type Task = {
   is_completed: boolean;
   status?: string;
   due_date?: string;
+  column_id?: string;
+  position?: number;
 };
 
 export type TaskResponse = {

@@ -10,6 +10,7 @@ import { Button } from "../ui/button";
 import { format } from "date-fns";
 import { CalendarDemo } from "../calendar/CalentadarDemo";
 import { useListStore } from "@/stores/list_store";
+import { useKanbanStore } from "@/stores/kanban_store";
 import {
   Popover,
   PopoverContent,
@@ -172,6 +173,10 @@ export function TaskDetails({ className }: TaskDetailsProps) {
         changes.list_id = currentTask.list_id;
       }
 
+      if (currentTask.column_id !== task?.column_id) {
+        changes.column_id = currentTask.column_id;
+      }
+
       if (Object.keys(changes).length === 0) {
         toast.dismiss(toastId);
         setIsSaving(false);
@@ -205,6 +210,13 @@ export function TaskDetails({ className }: TaskDetailsProps) {
     setCurrentTask((prev) => {
       if (!prev) return undefined;
       return { ...prev, list_id: newListId };
+    });
+  };
+
+  const handleColumnChange = (columnId: string) => {
+    setCurrentTask((prev) => {
+      if (!prev) return undefined;
+      return { ...prev, column_id: columnId };
     });
   };
 
@@ -257,7 +269,8 @@ export function TaskDetails({ className }: TaskDetailsProps) {
       currentTask.title.trim() !== task.title.trim() ||
       currentTask.description?.trim() !== task.description?.trim() ||
       (currentTask.due_date || "") !== (task.due_date || "") ||
-      (currentTask.list_id || "") !== (task.list_id || "")
+      (currentTask.list_id || "") !== (task.list_id || "") ||
+      (currentTask.column_id || "") !== (task.column_id || "")
     );
   }
   return (
@@ -289,6 +302,7 @@ export function TaskDetails({ className }: TaskDetailsProps) {
                 lists={lists}
                 handleListChange={handleListChange}
                 handleDateChange={handleDateChange}
+                handleColumnChange={handleColumnChange}
               />
 
               <form
@@ -362,6 +376,7 @@ export function TaskDetails({ className }: TaskDetailsProps) {
               lists={lists}
               handleListChange={handleListChange}
               handleDateChange={handleDateChange}
+              handleColumnChange={handleColumnChange}
             />
 
             <form
@@ -460,12 +475,16 @@ function TaskDetailsActions({
   lists,
   handleListChange,
   handleDateChange,
+  handleColumnChange,
 }: {
   currentTask: Task | undefined;
   lists: List[];
   handleListChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
   handleDateChange: (date: Date | undefined) => void;
+  handleColumnChange: (columnId: string) => void;
 }) {
+  const { columns } = useKanbanStore();
+
   return (
     <div className="px-6 py-4 space-y-6 border-b">
       <div className="flex justify-start gap-2 items-center space-y-2">
@@ -497,6 +516,33 @@ function TaskDetailsActions({
           </Select>
         </div>
       </div>
+
+      {columns.length > 0 && (
+        <div className="flex justify-start gap-2 items-center space-y-2">
+          <label className="block text-sm font-medium mb-1">Column</label>
+          <div className="w-full">
+            <Select
+              value={currentTask?.column_id || ""}
+              onValueChange={handleColumnChange}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select a column" />
+              </SelectTrigger>
+              <SelectContent>
+                {columns.map((col) => (
+                  <SelectItem
+                    key={col.id}
+                    value={col.id!}
+                    className="cursor-pointer hover:bg-accent"
+                  >
+                    {col.title}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+      )}
 
       <div>
         <label className="block text-sm font-medium mb-1">Due Date</label>

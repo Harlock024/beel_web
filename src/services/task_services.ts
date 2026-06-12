@@ -67,3 +67,24 @@ export async function DeleteTask(taskId: string): Promise<boolean> {
     handleAxiosError(error, "DeleteTask");
   }
 }
+
+export async function CreateKanbanTask({
+  title,
+  column_id,
+  list_id,
+}: {
+  title: string;
+  column_id: string;
+  list_id?: string;
+}): Promise<Task> {
+  try {
+    const response = await api_client.post("/api/tasks", {
+      title,
+      column_id,
+      list_id,
+    });
+    return response.data.task || response.data;
+  } catch (error) {
+    handleAxiosError(error, "CreateKanbanTask");
+  }
+}
