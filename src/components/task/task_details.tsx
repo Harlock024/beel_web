@@ -37,7 +37,6 @@ export function TaskDetails({ className }: TaskDetailsProps) {
   const sidebarRef = useRef<HTMLDivElement>(null);
   const widthRef = useRef(400);
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
-  console.log("currentTask", currentTask);
 
   const startResizing = (e: React.MouseEvent) => {
     e.preventDefault();
