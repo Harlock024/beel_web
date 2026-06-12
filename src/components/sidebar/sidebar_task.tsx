@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import { ChevronsRight, List, Home } from "lucide-react";
+import { ChevronsRight, List, Home, Tags } from "lucide-react";
 import { useState } from "react";
 import { FilterType, useFilterStore } from "@/stores/useFilterStore";
 
@@ -27,13 +27,21 @@ export function SidebarTask({ className }: { className?: string }) {
       href: "/task/upcoming",
       filter: "upcoming" as FilterType,
     },
+    {
+      id: "filters-tags",
+      title: "Filters & Tags",
+      icon: <Tags size={18} />,
+      href: "/filters-tags",
+    },
   ];
 
   const handleNavClick = (navItem: typeof taskNav[0]) => {
     setSelectedNavId(navItem.id);
-    useFilterStore.getState().filterTasks({
-      dateFilter: navItem.filter,
-    });
+    if (navItem.filter) {
+      useFilterStore.getState().filterTasks({
+        dateFilter: navItem.filter,
+      });
+    }
   };
 
   return (

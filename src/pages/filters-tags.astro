@@ -1,0 +1,16 @@
+---
+import Layout from "../layouts/Layout.astro";
+---
+
+<Layout title="Filters & Tags">
+    <div id="filters-tags-root"></div>
+</Layout>
+
+<script>
+    import React from "react";
+    import ReactDOM from "react-dom/client";
+    import App from "@/components/filters-tags-page";
+
+    const root = ReactDOM.createRoot(document.getElementById("filters-tags-root")!);
+    root.render(React.createElement(App));
+</script>
