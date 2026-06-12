@@ -1,9 +1,9 @@
 import { useEffect, useState, useRef } from "react";
 import { Task } from "@/types/task";
 import { useTaskStore } from "@/stores/task_store";
-import { Expand, X } from "lucide-react";
+import { Check, Expand, Plus, Trash2, X } from "lucide-react";
 import { Button } from "../ui/button";
-import { format, set } from "date-fns";
+import { format } from "date-fns";
 import { CalendarDemo } from "../calendar/CalentadarDemo";
 import { useListStore } from "@/stores/list_store";
 import {
@@ -22,6 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Checkbox } from "../ui/checkbox";
 
 type TaskDetailsProps = {
   className?: string;
@@ -273,6 +274,10 @@ export function TaskDetails({ className }: TaskDetailsProps) {
               />
             </form>
 
+            {currentTask?.id && !currentTask.id.startsWith("temp-") && (
+              <SubtaskSection task={currentTask} />
+            )}
+
             <TaskDetailsFooter
               hasChanges={hasTaskChanged()}
               isSaving={isSaving}
@@ -444,6 +449,81 @@ function TaskDetailsFooter({
           {isSaving ? "Saving..." : "Save Changes"}
         </Button>
       </div>
+    </div>
+  );
+}
+
+function SubtaskSection({ task }: { task: Task }) {
+  const { addSubtask, toggleSubtask, removeSubtask } = useTaskStore();
+  const [newTitle, setNewTitle] = useState("");
+  const subtasks = task.sub_tasks || [];
+  const completedCount = subtasks.filter((s) => s.done).length;
+
+  const handleAdd = () => {
+    const title = newTitle.trim();
+    if (!title) return;
+    addSubtask(task.id!, title);
+    setNewTitle("");
+  };
+
+  return (
+    <div className="px-6 py-4 border-t">
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="text-sm font-medium text-foreground">
+          Subtasks
+          {subtasks.length > 0 && (
+            <span className="ml-2 text-muted-foreground">
+              {completedCount}/{subtasks.length}
+            </span>
+          )}
+        </h3>
+      </div>
+
+      <div className="space-y-1">
+        {subtasks.map((subtask) => (
+          <div
+            key={subtask.id}
+            className="flex items-center gap-2 py-1.5 px-2 rounded-md hover:bg-accent/50 group"
+          >
+            <Checkbox
+              checked={subtask.done}
+              onCheckedChange={() => toggleSubtask(task.id!, subtask.id)}
+              className="h-4 w-4"
+            />
+            <span
+              className={cn(
+                "flex-1 text-sm",
+                subtask.done && "line-through text-muted-foreground",
+              )}
+            >
+              {subtask.title}
+            </span>
+            <button
+              onClick={() => removeSubtask(task.id!, subtask.id)}
+              className="opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive"
+            >
+              <Trash2 className="h-3.5 w-3.5" />
+            </button>
+          </div>
+        ))}
+      </div>
+
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          handleAdd();
+        }}
+        className="flex items-center gap-2 mt-2"
+      >
+        <Plus className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+        <input
+          type="text"
+          value={newTitle}
+          onChange={(e) => setNewTitle(e.target.value)}
+          placeholder="Add subtask..."
+          className="flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+        />
+      </form>
     </div>
   );
 }

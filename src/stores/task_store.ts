@@ -6,7 +6,13 @@ import {
   FetchTasksByFilter,
   UpdateTask,
 } from "../services/task_services";
+import {
+  CreateSubtask,
+  DeleteSubtask,
+  UpdateSubtask,
+} from "../services/subtask_services";
 import { Task } from "../types/task";
+import { Subtask } from "../types/subTask";
 import toast from "react-hot-toast";
 import { FilterType } from "./useFilterStore";
 
@@ -21,6 +27,9 @@ type TaskState = {
   addTask: (newTask: Task) => void;
   removeTask: (id: string) => void;
   updateTask: (updatedTask: Partial<Task>, task_id: string) => void;
+  addSubtask: (taskId: string, title: string) => Promise<void>;
+  toggleSubtask: (taskId: string, subtaskId: string) => Promise<void>;
+  removeSubtask: (taskId: string, subtaskId: string) => Promise<void>;
 };
 
 export const useTaskStore = create<TaskState>((set, get) => ({
@@ -144,6 +153,174 @@ export const useTaskStore = create<TaskState>((set, get) => ({
         return { tasks: updated };
       });
       console.error("Error al actualizar tarea", error);
+    }
+  },
+
+  addSubtask: async (taskId, title) => {
+    const tempId = `temp-${Date.now()}`;
+    const tempSubtask: Subtask = { id: tempId, title, done: false };
+
+    set((state) => {
+      const task = state.tasks.get(taskId);
+      if (!task) return state;
+      const updated = new Map(state.tasks);
+      updated.set(taskId, {
+        ...task,
+        sub_tasks: [...(task.sub_tasks || []), tempSubtask],
+      });
+      const currentTask =
+        state.task?.id === taskId
+          ? { ...state.task, sub_tasks: [...(state.task.sub_tasks || []), tempSubtask] }
+          : state.task;
+      return { tasks: updated, task: currentTask };
+    });
+
+    try {
+      const created = await CreateSubtask(taskId, title);
+      set((state) => {
+        const task = state.tasks.get(taskId);
+        if (!task) return state;
+        const updated = new Map(state.tasks);
+        updated.set(taskId, {
+          ...task,
+          sub_tasks: (task.sub_tasks || []).map((s) =>
+            s.id === tempId ? created : s,
+          ),
+        });
+        const currentTask =
+          state.task?.id === taskId
+            ? {
+                ...state.task,
+                sub_tasks: (state.task.sub_tasks || []).map((s) =>
+                  s.id === tempId ? created : s,
+                ),
+              }
+            : state.task;
+        return { tasks: updated, task: currentTask };
+      });
+    } catch (error) {
+      set((state) => {
+        const task = state.tasks.get(taskId);
+        if (!task) return state;
+        const updated = new Map(state.tasks);
+        updated.set(taskId, {
+          ...task,
+          sub_tasks: (task.sub_tasks || []).filter((s) => s.id !== tempId),
+        });
+        const currentTask =
+          state.task?.id === taskId
+            ? {
+                ...state.task,
+                sub_tasks: (state.task.sub_tasks || []).filter(
+                  (s) => s.id !== tempId,
+                ),
+              }
+            : state.task;
+        return { tasks: updated, task: currentTask };
+      });
+      console.error("Error al crear subtask", error);
+    }
+  },
+
+  toggleSubtask: async (taskId, subtaskId) => {
+    const state = get();
+    const task = state.tasks.get(taskId);
+    if (!task) return;
+    const subtask = (task.sub_tasks || []).find((s) => s.id === subtaskId);
+    if (!subtask) return;
+
+    const toggled = { ...subtask, done: !subtask.done };
+
+    set((s) => {
+      const updated = new Map(s.tasks);
+      updated.set(taskId, {
+        ...task,
+        sub_tasks: (task.sub_tasks || []).map((st) =>
+          st.id === subtaskId ? toggled : st,
+        ),
+      });
+      const currentTask =
+        s.task?.id === taskId
+          ? {
+              ...s.task,
+              sub_tasks: (s.task.sub_tasks || []).map((st) =>
+                st.id === subtaskId ? toggled : st,
+              ),
+            }
+          : s.task;
+      return { tasks: updated, task: currentTask };
+    });
+
+    try {
+      await UpdateSubtask(taskId, subtaskId, { done: toggled.done });
+    } catch (error) {
+      set((s) => {
+        const updated = new Map(s.tasks);
+        updated.set(taskId, {
+          ...task,
+          sub_tasks: (task.sub_tasks || []).map((st) =>
+            st.id === subtaskId ? subtask : st,
+          ),
+        });
+        const currentTask =
+          s.task?.id === taskId
+            ? {
+                ...s.task,
+                sub_tasks: (s.task.sub_tasks || []).map((st) =>
+                  st.id === subtaskId ? subtask : st,
+                ),
+              }
+            : s.task;
+        return { tasks: updated, task: currentTask };
+      });
+      console.error("Error al actualizar subtask", error);
+    }
+  },
+
+  removeSubtask: async (taskId, subtaskId) => {
+    const state = get();
+    const task = state.tasks.get(taskId);
+    if (!task) return;
+    const subtask = (task.sub_tasks || []).find((s) => s.id === subtaskId);
+    if (!subtask) return;
+
+    set((s) => {
+      const updated = new Map(s.tasks);
+      updated.set(taskId, {
+        ...task,
+        sub_tasks: (task.sub_tasks || []).filter((st) => st.id !== subtaskId),
+      });
+      const currentTask =
+        s.task?.id === taskId
+          ? {
+              ...s.task,
+              sub_tasks: (s.task.sub_tasks || []).filter(
+                (st) => st.id !== subtaskId,
+              ),
+            }
+          : s.task;
+      return { tasks: updated, task: currentTask };
+    });
+
+    try {
+      await DeleteSubtask(taskId, subtaskId);
+    } catch (error) {
+      set((s) => {
+        const updated = new Map(s.tasks);
+        updated.set(taskId, {
+          ...task,
+          sub_tasks: [...(task.sub_tasks || []), subtask],
+        });
+        const currentTask =
+          s.task?.id === taskId
+            ? {
+                ...s.task,
+                sub_tasks: [...(s.task.sub_tasks || []), subtask],
+              }
+            : s.task;
+        return { tasks: updated, task: currentTask };
+      });
+      console.error("Error al eliminar subtask", error);
     }
   },
 }));
