@@ -225,7 +225,7 @@ export function TaskDetails({ className }: TaskDetailsProps) {
         <div
           ref={sidebarRef}
           className={cn(
-            "top-0 h-screen z-50 bg-white shadow-lg border-l transition-transform duration-300",
+            "top-0 h-screen z-50 bg-card shadow-lg border-l transition-transform duration-300",
             isOverlay ? "fixed right-0" : "absolute right-0",
             className,
           )}
@@ -417,7 +417,7 @@ function TaskDetailsFooter({
   onRemove: () => void;
 }) {
   return (
-    <div className="px-6 py-4 border-t mt-auto sticky bottom-0 bg-white z-10 flex items-center justify-between gap-4">
+    <div className="px-6 py-4 border-t mt-auto sticky bottom-0 bg-card z-10 flex items-center justify-between gap-4">
       <Button
         variant="destructive"
         size="sm"

@@ -18,6 +18,16 @@ const { title } = Astro.props;
         <meta name="viewport" content="width=device-width" />
         <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
         <title>{title}</title>
+        <script is:inline>
+            (function() {
+                try {
+                    var settings = JSON.parse(localStorage.getItem('settings-storage') || '{}');
+                    if (settings.state && settings.state.isDarkMode) {
+                        document.documentElement.classList.add('dark');
+                    }
+                } catch(e) {}
+            })();
+        </script>
         <ClientRouter />
     </head>
     <body class="flex m-0 min-h-screen">

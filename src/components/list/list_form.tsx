@@ -149,7 +149,7 @@ export function ListForm({ list, onComplete, isOpen = true }: ListFormProps) {
       onKeyDown={handleKeyDown}
       tabIndex={-1}
     >
-      <div className="w-full max-w-md bg-white rounded-lg shadow-xl border animate-in zoom-in-95 duration-200">
+      <div className="w-full max-w-md bg-card rounded-lg shadow-xl border animate-in zoom-in-95 duration-200">
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b">
           <h2 className="text-lg font-semibold text-gray-900">

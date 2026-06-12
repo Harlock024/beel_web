@@ -50,14 +50,14 @@ export function SidebarTask({ className }: { className?: string }) {
             className={cn(
               "flex items-center gap-3 px-3 py-2 rounded-md w-full justify-start text-[14px] transition-all duration-200",
               selectedNavId === item.id
-                ? "bg-[#ececec] text-gray-900 font-medium"
-                : "text-gray-700 hover:bg-[#ececec]"
+                ? "bg-accent text-accent-foreground font-medium"
+                : "text-muted-foreground hover:bg-accent"
             )}
           >
             <span
               className={cn(
                 "flex-shrink-0 transition-colors",
-                selectedNavId === item.id ? "text-gray-900" : "text-gray-500"
+                selectedNavId === item.id ? "text-accent-foreground" : "text-muted-foreground"
               )}
             >
               {item.icon}

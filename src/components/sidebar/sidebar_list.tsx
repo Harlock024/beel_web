@@ -34,7 +34,7 @@ export function SidebarList() {
         onOpenChange={setIsOpen}
         className="w-full"
       >
-        <div className="flex items-center justify-between px-3 py-1 rounded-md hover:bg-[#ececec] transition-colors cursor-pointer"> 
+        <div className="flex items-center justify-between px-3 py-1 rounded-md hover:bg-accent transition-colors cursor-pointer"> 
           <span className="text-[14px] select-none text-gray-500 font-medium">
             Lists
           </span>

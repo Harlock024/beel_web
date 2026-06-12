@@ -1,15 +1,10 @@
 import { User } from "@/types/user";
 import { Bell, Palette, Settings, Shield, UserIcon, X } from "lucide-react";
-import { use, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useSettingsStore } from "@/stores/useSettingsStore";
 import { useAuthStore } from "@/stores/useAuthStore";
 
-interface SettingsModalProps {
-  onComplete: () => void;
-  isOpen: boolean;
-  currentUser: User;
-}
 type SettingSection = "general" | "account" | "security" | "notifications";
 
 export function SettingsModal() {
@@ -104,7 +99,7 @@ function SettingHeader({ activeSection }: { activeSection: SettingSection }) {
     <header className="flex items-center justify-between mb-4 border-b pb-2">
       <div>
         <h1 className="text-2xl font-bold">{sectionTitles[activeSection]}</h1>
-        <p className="text-gray-500 text-sm">{sectionSubtitles[activeSection]}</p>
+        <p className="text-muted-foreground text-sm">{sectionSubtitles[activeSection]}</p>
       </div>
       {/* Botón de guardar eliminado del header */}
     </header>
@@ -127,10 +122,10 @@ function SettingSidebar({
   ];
 
   return (
-    <aside className="w-32 min-w-[175px] h-auto rounded-lg mr-6 bg-gray-50 flex-shrink-0">
-      <div className="flex justify-start p-3  border-b border-gray-200">
+    <aside className="w-32 min-w-[175px] h-auto rounded-lg mr-6 bg-muted flex-shrink-0">
+      <div className="flex justify-start p-3  border-b border-border">
         <button
-          className="p-1.5 rounded-full hover:bg-gray-200 transition-all duration-200 group"
+          className="p-1.5 rounded-full hover:bg-accent transition-all duration-200 group"
           onClick={onComplete}
         >
           <X className="h-4 w-4 text-gray-500 group-hover:text-gray-700 transition-colors" />
@@ -154,15 +149,15 @@ function SettingSidebar({
                   transition-colors duration-200 ease-out min-h-10
                   ${
                     isActive
-                      ? "bg-gray-200 text-black"
-                      : "text-gray-700 hover:bg-gray-200"
+                      ? "bg-accent text-accent-foreground"
+                      : "text-muted-foreground hover:bg-accent"
                   }
                 `}
               >
                 <Icon
                   className={`
                                  size-3 shrink-0 transition-colors duration-200
-                                 ${isActive ? "text-black" : "text-gray-500 hover:text-gray-700"}
+                                 ${isActive ? "text-accent-foreground" : "text-muted-foreground hover:text-foreground"}
                                `}
                 />
                 <span className="text-sm font-medium whitespace-nowrap">
@@ -198,7 +193,7 @@ export function SettingContent({
   }
 }
 function GeneralSettings() {
-  const [theme, setTheme] = useState("light");
+  const { isDarkMode, toggleDarkMode } = useSettingsStore();
   const [language, setLanguage] = useState("es");
   const [dateFormat, setDateFormat] = useState("DD/MM/YYYY");
 
@@ -211,9 +206,13 @@ function GeneralSettings() {
       <div className="mb-4">
         <label className="block font-medium mb-1">Tema</label>
         <select
-          className="border rounded px-2 py-1"
-          value={theme}
-          onChange={(e) => setTheme(e.target.value)}
+          className="border rounded px-2 py-1 bg-background text-foreground"
+          value={isDarkMode ? "dark" : "light"}
+          onChange={(e) => {
+            if ((e.target.value === "dark") !== isDarkMode) {
+              toggleDarkMode();
+            }
+          }}
         >
           <option value="light">Claro</option>
           <option value="dark">Oscuro</option>
@@ -224,7 +223,7 @@ function GeneralSettings() {
       <div className="mb-4">
         <label className="block font-medium mb-1">Idioma</label>
         <select
-          className="border rounded px-2 py-1"
+          className="border rounded px-2 py-1 bg-background text-foreground"
           value={language}
           onChange={(e) => setLanguage(e.target.value)}
         >
@@ -237,7 +236,7 @@ function GeneralSettings() {
       <div className="mb-4">
         <label className="block font-medium mb-1">Formato de fecha</label>
         <select
-          className="border rounded px-2 py-1"
+          className="border rounded px-2 py-1 bg-background text-foreground"
           value={dateFormat}
           onChange={(e) => setDateFormat(e.target.value)}
         >
@@ -276,7 +275,7 @@ function AccountSettings({ user }: { user: User }) {
             type="text"
             value={username}
             onChange={e => setUsername(e.target.value)}
-            className="w-full border rounded px-3 py-2 bg-white text-gray-700"
+            className="w-full border rounded px-3 py-2 bg-background text-foreground"
           />
         </div>
         <div>
@@ -285,7 +284,7 @@ function AccountSettings({ user }: { user: User }) {
             type="email"
             value={email}
             onChange={e => setEmail(e.target.value)}
-            className="w-full border rounded px-3 py-2 bg-white text-gray-700"
+            className="w-full border rounded px-3 py-2 bg-background text-foreground"
           />
         </div>
       </div>
@@ -339,7 +338,7 @@ export function SettingFooter() {
   return (
     <div className="w-full flex justify-end items-center gap-2 p-4 border-t">
       <button
-        className="bg-[#673ab7]  hover:bg-[#592E83] text-white px-4 py-1.5 rounded  transition"
+        className="bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-1.5 rounded  transition"
   
         // onClick={handleSave} // Aquí puedes conectar la lógica de guardado
       >

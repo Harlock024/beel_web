@@ -32,8 +32,8 @@ export function ListCard({ list }: { list: List }) {
         className={cn(
           "flex items-center gap-3 px-3 py-1 rounded-md w-full justify-start transition-colors",
           isSelected 
-            ? "bg-[#ececec] text-gray-900" 
-            : "text-gray-700 hover:bg-[#ececec]"
+            ? "bg-accent text-accent-foreground" 
+            : "text-muted-foreground hover:bg-accent"
         )}
         title={list.title}
       >
