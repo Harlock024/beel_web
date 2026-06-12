@@ -19,7 +19,6 @@ export async function CreateTag(name: string, color: string): Promise<Tag> {
       name,
       color,
       user_id: user?.id,
-      created_by: user?.id,
     });
     return response.data.tag;
   } catch (error) {
