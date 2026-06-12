@@ -2,6 +2,7 @@ import { useEffect, useState, useRef } from "react";
 import { Task } from "@/types/task";
 import { Subtask } from "@/types/subTask";
 import { useTaskStore } from "@/stores/task_store";
+import { useTagStore } from "@/stores/tag_store";
 import { FetchSubtasks } from "@/services/subtask_services";
 import { Check, Expand, Minimize, Plus, Trash2, X } from "lucide-react";
 import { Button } from "../ui/button";
@@ -671,58 +672,127 @@ function SubtaskSection({ task }: { task: Task }) {
 }
 
 function TagSection({ task }: { task: Task }) {
-  const { addTag, removeTag } = useTaskStore();
-  const [newTag, setNewTag] = useState("");
-  const tags = task.tags || [];
+  const {
+    tags: allTags,
+    taskTags,
+    fetchTags,
+    createTag,
+    assignTag,
+    unassignTag,
+    fetchTaskTags,
+  } = useTagStore();
+  const [open, setOpen] = useState(false);
+  const [newTagName, setNewTagName] = useState("");
+  const [search, setSearch] = useState("");
+  const inputRef = useRef<HTMLInputElement>(null);
 
-  const handleAdd = () => {
-    const name = newTag.trim();
+  const assignedTags = taskTags.get(task.id!) || task.tags || [];
+
+  useEffect(() => {
+    fetchTags();
+    if (task.id) fetchTaskTags(task.id);
+  }, [task.id]);
+
+  const filteredTags = allTags.filter(
+    (t) =>
+      t.name.toLowerCase().includes(search.toLowerCase()) &&
+      !assignedTags.some((a) => a.id === t.id),
+  );
+
+  const handleCreateAndAssign = async () => {
+    const name = newTagName.trim();
     if (!name) return;
-    if (tags.some((t) => t.name.toLowerCase() === name.toLowerCase())) {
-      toast.error("Tag already exists");
-      return;
+    const created = await createTag(name);
+    if (created && task.id) {
+      assignTag(task.id, created.id!);
     }
-    addTag(task.id!, name);
-    setNewTag("");
+    setNewTagName("");
+    setSearch("");
+  };
+
+  const handleAssign = (tagId: string) => {
+    if (task.id) assignTag(task.id, tagId);
+    setSearch("");
   };
 
   return (
     <div className="px-6 py-4 border-t">
-      <h3 className="text-sm font-medium text-foreground mb-3">Tags</h3>
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="text-sm font-medium text-foreground">Tags</h3>
+        <Popover open={open} onOpenChange={setOpen}>
+          <PopoverTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-6 w-6"
+            >
+              <Plus className="h-4 w-4 text-muted-foreground" />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-64 p-2" align="end">
+            <div className="space-y-2">
+              <input
+                ref={inputRef}
+                type="text"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search tags..."
+                className="w-full px-2 py-1.5 text-sm bg-transparent border border-border rounded-md outline-none focus:ring-1 focus:ring-ring"
+                autoFocus
+              />
 
-      <div className="flex flex-wrap gap-2 mb-2">
-        {tags.map((tag) => (
+              <div className="max-h-40 overflow-y-auto space-y-1">
+                {filteredTags.length > 0 ? (
+                  filteredTags.map((tag) => (
+                    <button
+                      key={tag.id}
+                      onClick={() => handleAssign(tag.id!)}
+                      className="w-full text-left px-2 py-1.5 text-sm rounded-md hover:bg-accent transition-colors"
+                    >
+                      {tag.name}
+                    </button>
+                  ))
+                ) : (
+                  <span className="block px-2 py-1.5 text-xs text-muted-foreground">
+                    {search ? "No matching tags" : "No tags yet"}
+                  </span>
+                )}
+              </div>
+
+              {search && (
+                <div className="border-t pt-2">
+                  <button
+                    onClick={handleCreateAndAssign}
+                    className="w-full text-left px-2 py-1.5 text-sm rounded-md hover:bg-accent transition-colors text-primary"
+                  >
+                    Create & assign "{search}"
+                  </button>
+                </div>
+              )}
+            </div>
+          </PopoverContent>
+        </Popover>
+      </div>
+
+      <div className="flex flex-wrap gap-2">
+        {assignedTags.map((tag) => (
           <span
             key={tag.id}
             className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-secondary text-secondary-foreground"
           >
             {tag.name}
             <button
-              onClick={() => removeTag(task.id!, tag.id!)}
+              onClick={() => task.id && unassignTag(task.id, tag.id!)}
               className="ml-0.5 hover:text-destructive transition-colors"
             >
               <X className="h-3 w-3" />
             </button>
           </span>
         ))}
+        {assignedTags.length === 0 && (
+          <span className="text-xs text-muted-foreground">No tags</span>
+        )}
       </div>
-
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          handleAdd();
-        }}
-        className="flex items-center gap-2"
-      >
-        <Plus className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-        <input
-          type="text"
-          value={newTag}
-          onChange={(e) => setNewTag(e.target.value)}
-          placeholder="Add tag..."
-          className="flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
-        />
-      </form>
     </div>
   );
 }

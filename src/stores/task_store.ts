@@ -11,10 +11,8 @@ import {
   DeleteSubtask,
   UpdateSubtask,
 } from "../services/subtask_services";
-import { AddTag, RemoveTag } from "../services/tag_services";
 import { Task } from "../types/task";
 import { Subtask } from "../types/subTask";
-import { Tag } from "../types/tag";
 import toast from "react-hot-toast";
 import { FilterType } from "./useFilterStore";
 
@@ -32,8 +30,6 @@ type TaskState = {
   addSubtask: (taskId: string, title: string) => Promise<void>;
   toggleSubtask: (taskId: string, subtaskId: string) => Promise<void>;
   removeSubtask: (taskId: string, subtaskId: string) => Promise<void>;
-  addTag: (taskId: string, name: string) => Promise<void>;
-  removeTag: (taskId: string, tagId: string) => Promise<void>;
 };
 
 export const useTaskStore = create<TaskState>((set, get) => ({
@@ -325,110 +321,6 @@ export const useTaskStore = create<TaskState>((set, get) => ({
         return { tasks: updated, task: currentTask };
       });
       console.error("Error al eliminar subtask", error);
-    }
-  },
-
-  addTag: async (taskId, name) => {
-    const tempId = `temp-${Date.now()}`;
-    const tempTag: Tag = { id: tempId, name };
-
-    set((s) => {
-      const task = s.tasks.get(taskId);
-      if (!task) return s;
-      const updated = new Map(s.tasks);
-      updated.set(taskId, {
-        ...task,
-        tags: [...(task.tags || []), tempTag],
-      });
-      const currentTask =
-        s.task?.id === taskId
-          ? { ...s.task, tags: [...(s.task.tags || []), tempTag] }
-          : s.task;
-      return { tasks: updated, task: currentTask };
-    });
-
-    try {
-      const created = await AddTag(taskId, name);
-      set((s) => {
-        const task = s.tasks.get(taskId);
-        if (!task) return s;
-        const updated = new Map(s.tasks);
-        updated.set(taskId, {
-          ...task,
-          tags: (task.tags || []).map((t) => (t.id === tempId ? created : t)),
-        });
-        const currentTask =
-          s.task?.id === taskId
-            ? {
-                ...s.task,
-                tags: (s.task.tags || []).map((t) =>
-                  t.id === tempId ? created : t,
-                ),
-              }
-            : s.task;
-        return { tasks: updated, task: currentTask };
-      });
-    } catch (error) {
-      set((s) => {
-        const task = s.tasks.get(taskId);
-        if (!task) return s;
-        const updated = new Map(s.tasks);
-        updated.set(taskId, {
-          ...task,
-          tags: (task.tags || []).filter((t) => t.id !== tempId),
-        });
-        const currentTask =
-          s.task?.id === taskId
-            ? {
-                ...s.task,
-                tags: (s.task.tags || []).filter((t) => t.id !== tempId),
-              }
-            : s.task;
-        return { tasks: updated, task: currentTask };
-      });
-      console.error("Error al agregar tag", error);
-    }
-  },
-
-  removeTag: async (taskId, tagId) => {
-    const state = get();
-    const task = state.tasks.get(taskId);
-    if (!task) return;
-    const tag = (task.tags || []).find((t) => t.id === tagId);
-    if (!tag) return;
-
-    set((s) => {
-      const updated = new Map(s.tasks);
-      updated.set(taskId, {
-        ...task,
-        tags: (task.tags || []).filter((t) => t.id !== tagId),
-      });
-      const currentTask =
-        s.task?.id === taskId
-          ? {
-              ...s.task,
-              tags: (s.task.tags || []).filter((t) => t.id !== tagId),
-            }
-          : s.task;
-      return { tasks: updated, task: currentTask };
-    });
-
-    try {
-      await RemoveTag(taskId, tagId);
-    } catch (error) {
-      set((s) => {
-        const updated = new Map(s.tasks);
-        updated.set(taskId, {
-          ...task,
-          tags: [...(task.tags || []), tag],
-        });
-        const currentTask =
-          s.task?.id === taskId
-            ? { ...s.task, tags: [...(s.task.tags || []), tag] }
-            : s.task;
-        return { tasks: updated, task: currentTask };
-      });
-      console.error("Error al eliminar tag", error);
     }
   },
 }));
