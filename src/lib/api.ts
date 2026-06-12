@@ -2,7 +2,6 @@ import axios, {
   AxiosError,
   AxiosInstance,
   AxiosRequestConfig,
-  AxiosResponse,
 } from "axios";
 import { API_URL } from "../services/api_url";
 
@@ -18,25 +17,6 @@ export const api_client: AxiosInstance = axios.create({
 
 
 let refreshPromise: Promise<string> | null = null;
-
-
-api_client.interceptors.request.use(
-  (async (config) => {
-    
-    if (typeof window !== "undefined" && refreshPromise) {
-      await refreshPromise;
-
-      const {accessToken} =  useAuthStore.getState();
-      if (accessToken) {
-        config.headers = config.headers || {};
-        config.headers.Authorization = `Bearer ${accessToken}`;
-      }
-    }
-    return config;
-  }),
-  (error) => Promise.reject(error),
-);
-
 
 api_client.interceptors.request.use(
   async (config) => {
