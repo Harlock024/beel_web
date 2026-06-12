@@ -1,8 +1,21 @@
 import { useEffect, useState } from "react";
 import { useTagStore } from "@/stores/tag_store";
 import { Button } from "@/components/ui/button";
-import { Pencil, Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2 } from "lucide-react";
+import { cn } from "@/lib/utils";
 import toast from "react-hot-toast";
+
+const TAG_COLORS = [
+  "#ef4444",
+  "#f97316",
+  "#eab308",
+  "#22c55e",
+  "#06b6d4",
+  "#3b82f6",
+  "#8b5cf6",
+  "#ec4899",
+  "#6b7280",
+];
 
 export default function FiltersTagsPage() {
   const {
@@ -12,8 +25,7 @@ export default function FiltersTagsPage() {
     deleteTag,
   } = useTagStore();
   const [newTagName, setNewTagName] = useState("");
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [editName, setEditName] = useState("");
+  const [selectedColor, setSelectedColor] = useState(TAG_COLORS[0]);
 
   useEffect(() => {
     fetchTags();
@@ -26,8 +38,9 @@ export default function FiltersTagsPage() {
       toast.error("Tag already exists");
       return;
     }
-    await createTag(name);
+    await createTag(name, selectedColor);
     setNewTagName("");
+    setSelectedColor(TAG_COLORS[0]);
   };
 
   const handleDelete = async (id: string) => {
@@ -46,18 +59,39 @@ export default function FiltersTagsPage() {
             e.preventDefault();
             handleCreate();
           }}
-          className="flex items-center gap-2 mb-4"
+          className="space-y-3 mb-4"
         >
           <input
             type="text"
             value={newTagName}
             onChange={(e) => setNewTagName(e.target.value)}
             placeholder="New tag name..."
-            className="flex-1 px-3 py-2 text-sm border border-border rounded-md bg-transparent outline-none focus:ring-1 focus:ring-ring"
+            className="w-full px-3 py-2 text-sm border border-border rounded-md bg-transparent outline-none focus:ring-1 focus:ring-ring"
           />
-          <Button type="submit" size="sm">
+
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-muted-foreground">Color:</span>
+            <div className="flex gap-1">
+              {TAG_COLORS.map((color) => (
+                <button
+                  key={color}
+                  type="button"
+                  onClick={() => setSelectedColor(color)}
+                  className={cn(
+                    "w-6 h-6 rounded-full border-2 transition-all",
+                    selectedColor === color
+                      ? "border-foreground scale-110"
+                      : "border-transparent hover:scale-105"
+                  )}
+                  style={{ backgroundColor: color }}
+                />
+              ))}
+            </div>
+          </div>
+
+          <Button type="submit" size="sm" className="w-full">
             <Plus className="h-4 w-4 mr-1" />
-            Create
+            Create Tag
           </Button>
         </form>
 
@@ -70,22 +104,11 @@ export default function FiltersTagsPage() {
                 key={tag.id}
                 className="flex items-center gap-3 py-2 px-3 rounded-md hover:bg-accent/50 group"
               >
-                {editingId === tag.id ? (
-                  <input
-                    type="text"
-                    value={editName}
-                    onChange={(e) => setEditName(e.target.value)}
-                    className="flex-1 px-2 py-1 text-sm bg-transparent border-b border-ring outline-none"
-                    autoFocus
-                    onBlur={() => setEditingId(null)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") setEditingId(null);
-                      if (e.key === "Escape") setEditingId(null);
-                    }}
-                  />
-                ) : (
-                  <span className="flex-1 text-sm">{tag.name}</span>
-                )}
+                <span
+                  className="w-3 h-3 rounded-full flex-shrink-0"
+                  style={{ backgroundColor: tag.color }}
+                />
+                <span className="flex-1 text-sm">{tag.name}</span>
                 <button
                   onClick={() => handleDelete(tag.id!)}
                   className="opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive"

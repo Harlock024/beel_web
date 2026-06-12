@@ -14,7 +14,7 @@ type TagState = {
   tags: Tag[];
   taskTags: Map<string, Tag[]>;
   fetchTags: () => Promise<void>;
-  createTag: (name: string) => Promise<Tag | undefined>;
+  createTag: (name: string, color: string) => Promise<Tag | undefined>;
   deleteTag: (id: string) => Promise<void>;
   assignTag: (taskId: string, tagId: string) => Promise<void>;
   unassignTag: (taskId: string, tagId: string) => Promise<void>;
@@ -34,14 +34,14 @@ export const useTagStore = create<TagState>((set, get) => ({
     }
   },
 
-  createTag: async (name: string) => {
+  createTag: async (name: string, color: string) => {
     const tempId = `temp-${Date.now()}`;
-    const tempTag: Tag = { id: tempId, name };
+    const tempTag: Tag = { id: tempId, name, color };
 
     set((s) => ({ tags: [...s.tags, tempTag] }));
 
     try {
-      const created = await CreateTag(name);
+      const created = await CreateTag(name, color);
       set((s) => ({
         tags: s.tags.map((t) => (t.id === tempId ? created : t)),
       }));

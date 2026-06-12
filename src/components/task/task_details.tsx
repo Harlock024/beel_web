@@ -702,7 +702,7 @@ function TagSection({ task }: { task: Task }) {
   const handleCreateAndAssign = async () => {
     const name = newTagName.trim();
     if (!name) return;
-    const created = await createTag(name);
+    const created = await createTag(name, "#6b7280");
     if (created && task.id) {
       assignTag(task.id, created.id!);
     }
@@ -747,8 +747,12 @@ function TagSection({ task }: { task: Task }) {
                     <button
                       key={tag.id}
                       onClick={() => handleAssign(tag.id!)}
-                      className="w-full text-left px-2 py-1.5 text-sm rounded-md hover:bg-accent transition-colors"
+                      className="w-full text-left px-2 py-1.5 text-sm rounded-md hover:bg-accent transition-colors flex items-center gap-2"
                     >
+                      <span
+                        className="w-2.5 h-2.5 rounded-full flex-shrink-0"
+                        style={{ backgroundColor: tag.color }}
+                      />
                       {tag.name}
                     </button>
                   ))
@@ -778,12 +782,20 @@ function TagSection({ task }: { task: Task }) {
         {assignedTags.map((tag) => (
           <span
             key={tag.id}
-            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-secondary text-secondary-foreground"
+            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium"
+            style={{
+              backgroundColor: `${tag.color}20`,
+              color: tag.color,
+            }}
           >
+            <span
+              className="w-2 h-2 rounded-full"
+              style={{ backgroundColor: tag.color }}
+            />
             {tag.name}
             <button
               onClick={() => task.id && unassignTag(task.id, tag.id!)}
-              className="ml-0.5 hover:text-destructive transition-colors"
+              className="ml-0.5 hover:opacity-70 transition-opacity"
             >
               <X className="h-3 w-3" />
             </button>

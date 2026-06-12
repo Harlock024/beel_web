@@ -11,10 +11,11 @@ export async function FetchAllTags(): Promise<Tag[]> {
   }
 }
 
-export async function CreateTag(name: string): Promise<Tag> {
+export async function CreateTag(name: string, color: string): Promise<Tag> {
   try {
     const response = await api_client.post<{ tag: Tag }>("/api/tags", {
       name,
+      color,
     });
     return response.data.tag;
   } catch (error) {
