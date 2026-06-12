@@ -1,5 +1,6 @@
 import { api_client, handleAxiosError } from "@/lib/api";
 import { Tag } from "@/types/tag";
+import { useAuthStore } from "@/stores/useAuthStore";
 
 // Global tags
 export async function FetchAllTags(): Promise<Tag[]> {
@@ -13,9 +14,11 @@ export async function FetchAllTags(): Promise<Tag[]> {
 
 export async function CreateTag(name: string, color: string): Promise<Tag> {
   try {
+    const { user } = useAuthStore.getState();
     const response = await api_client.post<{ tag: Tag }>("/api/tags", {
       name,
       color,
+      user_id: user?.id,
     });
     return response.data.tag;
   } catch (error) {
