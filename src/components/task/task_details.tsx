@@ -278,6 +278,10 @@ export function TaskDetails({ className }: TaskDetailsProps) {
               <SubtaskSection task={currentTask} />
             )}
 
+            {currentTask?.id && !currentTask.id.startsWith("temp-") && (
+              <TagSection task={currentTask} />
+            )}
+
             <TaskDetailsFooter
               hasChanges={hasTaskChanged()}
               isSaving={isSaving}
@@ -521,6 +525,63 @@ function SubtaskSection({ task }: { task: Task }) {
           value={newTitle}
           onChange={(e) => setNewTitle(e.target.value)}
           placeholder="Add subtask..."
+          className="flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+        />
+      </form>
+    </div>
+  );
+}
+
+function TagSection({ task }: { task: Task }) {
+  const { addTag, removeTag } = useTaskStore();
+  const [newTag, setNewTag] = useState("");
+  const tags = task.tags || [];
+
+  const handleAdd = () => {
+    const name = newTag.trim();
+    if (!name) return;
+    if (tags.some((t) => t.name.toLowerCase() === name.toLowerCase())) {
+      toast.error("Tag already exists");
+      return;
+    }
+    addTag(task.id!, name);
+    setNewTag("");
+  };
+
+  return (
+    <div className="px-6 py-4 border-t">
+      <h3 className="text-sm font-medium text-foreground mb-3">Tags</h3>
+
+      <div className="flex flex-wrap gap-2 mb-2">
+        {tags.map((tag) => (
+          <span
+            key={tag.id}
+            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-secondary text-secondary-foreground"
+          >
+            {tag.name}
+            <button
+              onClick={() => removeTag(task.id!, tag.id!)}
+              className="ml-0.5 hover:text-destructive transition-colors"
+            >
+              <X className="h-3 w-3" />
+            </button>
+          </span>
+        ))}
+      </div>
+
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          handleAdd();
+        }}
+        className="flex items-center gap-2"
+      >
+        <Plus className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+        <input
+          type="text"
+          value={newTag}
+          onChange={(e) => setNewTag(e.target.value)}
+          placeholder="Add tag..."
           className="flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
         />
       </form>
