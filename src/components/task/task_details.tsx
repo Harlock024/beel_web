@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from "react";
 import { Task } from "@/types/task";
 import { useTaskStore } from "@/stores/task_store";
-import { Check, Expand, Plus, Trash2, X } from "lucide-react";
+import { Check, Expand, Minimize, Plus, Trash2, X } from "lucide-react";
 import { Button } from "../ui/button";
 import { format } from "date-fns";
 import { CalendarDemo } from "../calendar/CalentadarDemo";
@@ -34,6 +34,7 @@ export function TaskDetails({ className }: TaskDetailsProps) {
   const { setIsOpen: setSidebarOpen } = useSidebarStore();
   const [currentTask, setCurrentTask] = useState<Task | undefined>(task);
   const [isOverlay, setIsOverlay] = useState(false);
+  const [isFullScreen, setIsFullScreen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const sidebarRef = useRef<HTMLDivElement>(null);
   const widthRef = useRef(400);
@@ -81,25 +82,56 @@ export function TaskDetails({ className }: TaskDetailsProps) {
 
   useEffect(() => {
     setCurrentTask(task);
+    setIsFullScreen(false);
+    setIsOverlay(false);
+    setSidebarOpen(true);
     if (task && sidebarRef.current) {
       sidebarRef.current.style.width = `${widthRef.current}px`;
     }
   }, [task]);
 
+  const handleClose = () => {
+    setIsFullScreen(false);
+    setIsOverlay(false);
+    setSidebarOpen(true);
+    closeTask();
+  };
+
+  const toggleFullScreen = () => {
+    setIsFullScreen((prev) => {
+      const next = !prev;
+      if (next) {
+        setSidebarOpen(false);
+        setIsOverlay(true);
+      } else {
+        setSidebarOpen(true);
+        setIsOverlay(false);
+        if (sidebarRef.current) {
+          sidebarRef.current.style.width = `${widthRef.current}px`;
+        }
+      }
+      return next;
+    });
+  };
+
   useEffect(() => {
-    const handleKeyboardSave = (e: KeyboardEvent) => {
+    const handleKeyboard = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.key === "s") {
         e.preventDefault();
         if (!isSaving && hasTaskChanged()) {
           handleEditTask();
         }
       }
+      if (e.key === "Escape" && isFullScreen) {
+        e.preventDefault();
+        handleClose();
+      }
     };
-    window.addEventListener("keydown", handleKeyboardSave);
+    window.addEventListener("keydown", handleKeyboard);
     return () => {
-      window.removeEventListener("keydown", handleKeyboardSave);
+      window.removeEventListener("keydown", handleKeyboard);
     };
-  }, [currentTask, task, isSaving]);
+  }, [currentTask, task, isSaving, isFullScreen]);
 
   const handleEditTask = async () => {
     if (!currentTask || isSaving) return;
@@ -222,11 +254,78 @@ export function TaskDetails({ className }: TaskDetailsProps) {
   }
   return (
     <div>
-      {task && (
+      {task && isFullScreen && (
+        <div
+          className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4"
+          onClick={handleClose}
+        >
+          <div
+            className="bg-card rounded-lg shadow-2xl w-full max-w-3xl h-[85vh] flex flex-col overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex flex-col h-full">
+              <TaskDetailsHeader
+                task={currentTask}
+                onClose={handleClose}
+                isFullScreen={isFullScreen}
+                onExpand={toggleFullScreen}
+                onUpdateTitle={(title) =>
+                  setCurrentTask((prev) =>
+                    prev ? { ...prev, title } : undefined,
+                  )
+                }
+              />
+
+              <TaskDetailsActions
+                currentTask={currentTask}
+                lists={lists}
+                handleListChange={handleListChange}
+                handleDateChange={handleDateChange}
+              />
+
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  handleEditTask();
+                }}
+                className="flex-1 overflow-y-auto px-6 py-4"
+              >
+                <textarea
+                  className="w-full bg-transparent outline-none resize-none min-h-[200px] text-sm placeholder:text-muted-foreground border-muted-foreground focus:border-primary transition-all"
+                  value={currentTask?.description || ""}
+                  onChange={(e) =>
+                    setCurrentTask((prev) =>
+                      prev ? { ...prev, description: e.target.value } : undefined,
+                    )
+                  }
+                  placeholder="Write something about this task..."
+                />
+              </form>
+
+              {currentTask?.id && !currentTask.id.startsWith("temp-") && (
+                <SubtaskSection task={currentTask} />
+              )}
+
+              {currentTask?.id && !currentTask.id.startsWith("temp-") && (
+                <TagSection task={currentTask} />
+              )}
+
+              <TaskDetailsFooter
+                hasChanges={hasTaskChanged()}
+                isSaving={isSaving}
+                onSave={handleEditTask}
+                onRemove={handleRemoveTask}
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {task && !isFullScreen && (
         <div
           ref={sidebarRef}
           className={cn(
-            "top-0 h-screen z-50 bg-card shadow-lg border-l transition-transform duration-300",
+            "top-0 h-screen z-50 bg-card shadow-lg border-l transition-all duration-300",
             isOverlay ? "fixed right-0" : "absolute right-0",
             className,
           )}
@@ -237,10 +336,11 @@ export function TaskDetails({ className }: TaskDetailsProps) {
             onMouseDown={startResizing}
           ></div>
           <div className="flex flex-col h-full">
-            {/* Header */}
             <TaskDetailsHeader
               task={currentTask}
-              onClose={closeTask}
+              onClose={handleClose}
+              isFullScreen={isFullScreen}
+              onExpand={toggleFullScreen}
               onUpdateTitle={(title) =>
                 setCurrentTask((prev) =>
                   prev ? { ...prev, title } : undefined,
@@ -300,11 +400,13 @@ function TaskDetailsHeader({
   onUpdateTitle,
   onClose,
   onExpand,
+  isFullScreen,
 }: {
   task: Task | undefined;
   onUpdateTitle: (title: string) => void;
   onClose: () => void;
   onExpand?: () => void;
+  isFullScreen?: boolean;
 }) {
   return (
     <div className="px-6 py-4">
@@ -324,7 +426,11 @@ function TaskDetailsHeader({
             className="h-8 w-8"
             onClick={onExpand}
           >
-            <Expand className="w-4 h-4" />
+            {isFullScreen ? (
+              <Minimize className="w-4 h-4" />
+            ) : (
+              <Expand className="w-4 h-4" />
+            )}
           </Button>
         </div>
       </div>

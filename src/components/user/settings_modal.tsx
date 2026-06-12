@@ -205,7 +205,7 @@ function GeneralSettings() {
 
       {/* Cambiar tema */}
       <div className="mb-4">
-        <label className="block font-medium mb-1">Tema</label>
+        <label className="block font-medium mb-1">Theme</label>
         <select
           className="border rounded px-2 py-1 bg-background text-foreground"
           value={isDarkMode ? "dark" : "light"}
@@ -215,27 +215,27 @@ function GeneralSettings() {
             }
           }}
         >
-          <option value="light">Claro</option>
-          <option value="dark">Oscuro</option>
+          <option value="light">Light</option>
+          <option value="dark">Dark</option>
         </select>
       </div>
 
       {/* Cambiar idioma */}
       <div className="mb-4">
-        <label className="block font-medium mb-1">Idioma</label>
+        <label className="block font-medium mb-1">Language</label>
         <select
           className="border rounded px-2 py-1 bg-background text-foreground"
           value={language}
           onChange={(e) => setLanguage(e.target.value)}
         >
-          <option value="es">Español</option>
-          <option value="en">Inglés</option>
+          <option value="es">Spanish</option>
+          <option value="en">English</option>
         </select>
       </div>
 
       {/* Cambiar formato de fecha */}
       <div className="mb-4">
-        <label className="block font-medium mb-1">Formato de fecha</label>
+        <label className="block font-medium mb-1">Date format</label>
         <select
           className="border rounded px-2 py-1 bg-background text-foreground"
           value={dateFormat}
