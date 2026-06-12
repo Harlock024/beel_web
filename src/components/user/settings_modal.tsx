@@ -1,9 +1,10 @@
 import { User } from "@/types/user";
-import { Bell, Palette, Settings, Shield, UserIcon, X } from "lucide-react";
+import { Bell, Settings, Shield, UserIcon, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useSettingsStore } from "@/stores/useSettingsStore";
 import { useAuthStore } from "@/stores/useAuthStore";
+import toast from "react-hot-toast";
 
 type SettingSection = "general" | "account" | "security" | "notifications";
 
@@ -73,7 +74,7 @@ export function SettingsModal() {
           <div className="flex-1 overflow-y-auto p-6">
             <SettingContent activeSection={activeSection} user={user} />
           </div>
-          <SettingFooter />
+          <SettingFooter onSave={onComplete} />
         </div>
       </div>
     </section>
@@ -265,7 +266,7 @@ function AccountSettings({ user }: { user: User }) {
         </Avatar>
         <div>
           <p className="text-lg font-semibold">{user.username}</p>
-          <p className="text-gray-500">{user.email}</p>
+          <p className="text-muted-foreground">{user.email}</p>
         </div>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -334,13 +335,15 @@ function NotificationSettings() {
   );
 }
 
-export function SettingFooter() {
+export function SettingFooter({ onSave }: { onSave: () => void }) {
   return (
     <div className="w-full flex justify-end items-center gap-2 p-4 border-t">
       <button
-        className="bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-1.5 rounded  transition"
-  
-        // onClick={handleSave} // Aquí puedes conectar la lógica de guardado
+        className="bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-1.5 rounded transition"
+        onClick={() => {
+          toast.success("Settings saved");
+          onSave();
+        }}
       >
         Guardar cambios
       </button>
