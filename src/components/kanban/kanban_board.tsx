@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import {
   DragDropContext,
+  Droppable,
   DropResult,
 } from "@hello-pangea/dnd";
 import { useKanbanStore } from "@/stores/kanban_store";
@@ -29,6 +30,7 @@ export function KanbanBoard() {
     renameBoard,
     removeBoard,
     moveTask,
+    moveColumn,
   } = useKanbanStore();
   const { tasks } = useTaskStore();
   const [isCreating, setIsCreating] = useState(false);
@@ -112,13 +114,18 @@ export function KanbanBoard() {
   };
 
   const handleDragEnd = (result: DropResult) => {
-    const { source, destination, draggableId } = result;
+    const { source, destination, draggableId, type } = result;
 
     if (!destination) return;
     if (
       source.droppableId === destination.droppableId &&
       source.index === destination.index
     ) {
+      return;
+    }
+
+    if (type === "COLUMN") {
+      moveColumn(draggableId, source.index, destination.index);
       return;
     }
 
@@ -255,16 +262,26 @@ export function KanbanBoard() {
 
       {boardId && (
         <DragDropContext onDragEnd={handleDragEnd}>
-          <div className="flex gap-4 p-4 overflow-x-auto flex-1">
-            {columns.map((col) => (
-              <KanbanColumn
-                key={col.id}
-                column={col}
-                tasks={getColumnTasks(col.id!)}
-              />
-            ))}
-            <KanbanColumnForm />
-          </div>
+          <Droppable droppableId="board" direction="horizontal" type="COLUMN">
+            {(provided) => (
+              <div
+                ref={provided.innerRef}
+                {...provided.droppableProps}
+                className="flex gap-4 p-4 overflow-x-auto flex-1"
+              >
+                {columns.map((col, index) => (
+                  <KanbanColumn
+                    key={col.id}
+                    column={col}
+                    tasks={getColumnTasks(col.id!)}
+                    index={index}
+                  />
+                ))}
+                {provided.placeholder}
+                <KanbanColumnForm />
+              </div>
+            )}
+          </Droppable>
         </DragDropContext>
       )}
     </div>

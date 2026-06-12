@@ -35,6 +35,7 @@ type KanbanState = {
   updateColumn: (id: string, title: string) => Promise<void>;
   deleteColumn: (id: string) => Promise<void>;
   addKanbanTask: (title: string, columnId: string) => Promise<void>;
+  moveColumn: (columnId: string, fromIndex: number, toIndex: number) => void;
 
   moveTask: (
     taskId: string,
@@ -271,6 +272,23 @@ export const useKanbanStore = create<KanbanState>((set, get) => ({
       toast.error("Error creating task");
       console.error("Error creating task", error);
     }
+  },
+
+  moveColumn: (columnId, fromIndex, toIndex) => {
+    const { columns } = get();
+    const newColumns = [...columns];
+    const [moved] = newColumns.splice(fromIndex, 1);
+    newColumns.splice(toIndex, 0, moved);
+
+    set({
+      columns: newColumns.map((c, i) => ({ ...c, position: i })),
+    });
+
+    newColumns.forEach((col, i) => {
+      if (col.id && !col.id.startsWith("temp-")) {
+        UpdateColumn(col.id, { position: i }).catch(console.error);
+      }
+    });
   },
 
   moveTask: (taskId, sourceColumnId, destColumnId, sourceIndex, destIndex) => {
