@@ -40,12 +40,14 @@ export function TaskDetails({ className }: TaskDetailsProps) {
   const [isOverlay, setIsOverlay] = useState(false);
   const [isFullScreen, setIsFullScreen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isResizing, setIsResizing] = useState(false);
   const sidebarRef = useRef<HTMLDivElement>(null);
   const widthRef = useRef(400);
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
 
   const startResizing = (e: React.MouseEvent) => {
     e.preventDefault();
+    setIsResizing(true);
 
     const startX = e.clientX;
     const startWidth = sidebarRef.current?.offsetWidth || 400;
@@ -63,14 +65,6 @@ export function TaskDetails({ className }: TaskDetailsProps) {
 
       sidebarRef.current.style.width = `${newWidth}px`;
       widthRef.current = newWidth;
-
-      if (newWidth > window.innerWidth / 2) {
-        setIsOverlay(true);
-        setSidebarOpen(false);
-      } else {
-        setIsOverlay(false);
-        setSidebarOpen(true);
-      }
     };
 
     const stopResizing = () => {
@@ -78,6 +72,16 @@ export function TaskDetails({ className }: TaskDetailsProps) {
       document.body.style.userSelect = "";
       document.removeEventListener("mousemove", resize);
       document.removeEventListener("mouseup", stopResizing);
+      setIsResizing(false);
+
+      const finalWidth = widthRef.current;
+      if (finalWidth > window.innerWidth / 2) {
+        setIsOverlay(true);
+        setSidebarOpen(false);
+      } else {
+        setIsOverlay(false);
+        setSidebarOpen(true);
+      }
     };
 
     document.addEventListener("mousemove", resize);
@@ -329,7 +333,8 @@ export function TaskDetails({ className }: TaskDetailsProps) {
         <div
           ref={sidebarRef}
           className={cn(
-            "top-0 h-screen z-50 bg-card shadow-lg border-l transition-all duration-300",
+            "top-0 h-screen z-50 bg-card shadow-lg border-l",
+            isResizing ? "" : "transition-all duration-300",
             isOverlay ? "fixed right-0" : "absolute right-0",
             className,
           )}
@@ -682,7 +687,9 @@ function TagSection({ task }: { task: Task }) {
   } = useTagStore();
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
-  const [localTags, setLocalTags] = useState<Tag[]>(task.tags || []);
+  const [assignedIds, setAssignedIds] = useState<Set<string>>(
+    new Set((task.tags || []).map((t) => t.id).filter(Boolean) as string[]),
+  );
   const inputRef = useRef<HTMLInputElement>(null);
 
   const TAG_COLORS = [
@@ -695,31 +702,34 @@ function TagSection({ task }: { task: Task }) {
   }, [task.id]);
 
   useEffect(() => {
-    setLocalTags(task.tags || []);
+    setAssignedIds(new Set((task.tags || []).map((t) => t.id).filter(Boolean) as string[]));
   }, [task.tags, task.id]);
+
+  const displayTags = allTags.filter((t) => assignedIds.has(t.id!));
 
   const filteredTags = allTags.filter((t) =>
     t.name.toLowerCase().includes(search.toLowerCase()),
   );
 
-  const isAssigned = (tagId: string) =>
-    localTags.some((a) => a.id === tagId);
+  const isAssigned = (tagId: string) => assignedIds.has(tagId);
 
   const exactMatch = allTags.some(
     (t) => t.name.toLowerCase() === search.toLowerCase(),
   );
   const showCreate = search.trim() && !exactMatch;
 
-  const handleToggle = async (tagId: string) => {
-    if (!task.id) return;
-    if (isAssigned(tagId)) {
-      setLocalTags((prev) => prev.filter((t) => t.id !== tagId));
-      await unassignTag(task.id, tagId);
+  const handleToggle = async (tag: Tag) => {
+    if (!task.id || !tag.id) return;
+    if (isAssigned(tag.id)) {
+      setAssignedIds((prev) => {
+        const next = new Set(prev);
+        next.delete(tag.id!);
+        return next;
+      });
+      await unassignTag(task.id, tag.id);
     } else {
-      const tag = allTags.find((t) => t.id === tagId);
-      if (!tag) return;
-      setLocalTags((prev) => [...prev, tag]);
-      await assignTag(task.id, tagId);
+      setAssignedIds((prev) => new Set(prev).add(tag.id!));
+      await assignTag(task.id, tag.id);
     }
   };
 
@@ -728,8 +738,8 @@ function TagSection({ task }: { task: Task }) {
     if (!name) return;
     const color = TAG_COLORS[Math.floor(Math.random() * TAG_COLORS.length)];
     const created = await createTag(name, color);
-    if (created && task.id) {
-      setLocalTags((prev) => [...prev, created]);
+    if (created && task.id && created.id) {
+      setAssignedIds((prev) => new Set(prev).add(created.id!));
       await assignTag(task.id, created.id!);
     }
     setSearch("");
@@ -770,7 +780,7 @@ function TagSection({ task }: { task: Task }) {
                     filteredTags.map((tag) => (
                       <button
                         key={tag.id}
-                        onClick={() => handleToggle(tag.id!)}
+                        onClick={() => handleToggle(tag)}
                         className="w-full text-left px-2 py-1.5 text-sm rounded-md hover:bg-accent transition-colors flex items-center gap-2"
                       >
                         <span
@@ -806,7 +816,7 @@ function TagSection({ task }: { task: Task }) {
       </div>
 
       <div className="flex flex-wrap gap-2">
-        {localTags.map((tag) => (
+        {displayTags.map((tag) => (
           <span
             key={tag.id}
             className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium"
@@ -821,14 +831,14 @@ function TagSection({ task }: { task: Task }) {
             />
             {tag.name}
             <button
-              onClick={() => handleToggle(tag.id!)}
+              onClick={() => handleToggle(tag)}
               className="ml-0.5 hover:opacity-70 transition-opacity"
             >
               <X className="h-3 w-3" />
             </button>
           </span>
         ))}
-        {localTags.length === 0 && (
+        {displayTags.length === 0 && (
           <span className="text-xs text-muted-foreground">No tags</span>
         )}
       </div>
