@@ -17,7 +17,7 @@ export function TaskForm() {
       const newTask: Task = {
         title: taskName,
         list_id: selectedListId ?? undefined,
-        completed: false,
+        is_completed: false,
       };
       addTask(newTask);
       setTaskName("");
