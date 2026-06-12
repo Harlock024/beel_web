@@ -2,7 +2,6 @@ import { api_client, handleAxiosError } from "@/lib/api";
 import { Tag } from "@/types/tag";
 import { useAuthStore } from "@/stores/useAuthStore";
 
-// Global tags
 export async function FetchAllTags(): Promise<Tag[]> {
   try {
     const response = await api_client.get<{ tags: Tag[] }>("/api/tags");
@@ -46,37 +45,11 @@ export async function DeleteTag(id: string): Promise<void> {
   }
 }
 
-// Task-tag assignment
-export async function FetchTaskTags(taskId: string): Promise<Tag[]> {
+export async function GetTagTasks(tagId: string): Promise<any[]> {
   try {
-    const response = await api_client.get<{ tags: Tag[] }>(
-      `/api/tasks/${taskId}/tags`,
-    );
-    return response.data.tags;
+    const response = await api_client.get<{ tasks: any[] }>(`/api/tags/${tagId}`);
+    return response.data.tasks;
   } catch (error) {
-    handleAxiosError(error, "FetchTaskTags");
-  }
-}
-
-export async function AssignTag(taskId: string, tagId: string): Promise<Tag> {
-  try {
-    const response = await api_client.post<{ tag: Tag }>(
-      `/api/tasks/${taskId}/tags`,
-      { tag_id: tagId },
-    );
-    return response.data.tag;
-  } catch (error) {
-    handleAxiosError(error, "AssignTag");
-  }
-}
-
-export async function UnassignTag(
-  taskId: string,
-  tagId: string,
-): Promise<void> {
-  try {
-    await api_client.delete(`/api/tasks/${taskId}/tags/${tagId}`);
-  } catch (error) {
-    handleAxiosError(error, "UnassignTag");
+    handleAxiosError(error, "GetTagTasks");
   }
 }
