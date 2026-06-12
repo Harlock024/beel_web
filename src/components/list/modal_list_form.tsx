@@ -56,7 +56,7 @@ export function ModalEditTaskForm({
         <input
           ref={nameRef}
           type="text"
-          placeholder="Nombre de la lista"
+          placeholder="List name"
           className="w-full border p-2 rounded mb-4"
         />
         <div className="mb-4">
@@ -82,7 +82,7 @@ export function ModalEditTaskForm({
             type="submit"
             className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
           >
-            Guardar cambios
+            Save changes
           </button>
         </div>
       </form>

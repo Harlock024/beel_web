@@ -103,12 +103,7 @@ export function LoginForm({
           )}
         </div>
         <div className="grid gap-3">
-          <div className="flex items-center justify-between">
-            <Label htmlFor="password">Password</Label>
-            <a href="#" className="text-xs text-gray-500 hover:text-gray-800">
-              Forgot password?
-            </a>
-          </div>
+          <Label htmlFor="password">Password</Label>
           <Input
             onChange={(e) => setPassword(e.target.value)}
             id="password"

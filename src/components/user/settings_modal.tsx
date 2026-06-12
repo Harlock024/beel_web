@@ -83,17 +83,17 @@ export function SettingsModal() {
 
 function SettingHeader({ activeSection }: { activeSection: SettingSection }) {
   const sectionTitles: Record<SettingSection, string> = {
-    general: "Configuración General",
+    general: "General Settings",
     account: "Cuenta",
     security: "Seguridad",
     notifications: "Notificaciones",
   };
 
   const sectionSubtitles: Record<SettingSection, string> = {
-    general: "Ajusta las preferencias generales de la aplicación.",
-    account: "Gestiona la información de tu cuenta.",
-    security: "Configura la seguridad de tu cuenta.",
-    notifications: "Personaliza tus notificaciones.",
+    general: "Adjust the general settings of the application.",
+    account: "Manage your account information.",
+    security: "Configure your account security.",
+    notifications: "Customize your notifications.",
   };
 
   return (
@@ -271,7 +271,7 @@ function AccountSettings({ user }: { user: User }) {
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium mb-1">Nombre de usuario</label>
+          <label className="block text-sm font-medium mb-1">Username</label>
           <input
             type="text"
             value={username}
@@ -280,7 +280,7 @@ function AccountSettings({ user }: { user: User }) {
           />
         </div>
         <div>
-          <label className="block text-sm font-medium mb-1">Correo electrónico</label>
+          <label className="block text-sm font-medium mb-1">Email</label>
           <input
             type="email"
             value={email}
@@ -310,7 +310,7 @@ function NotificationSettings() {
 
   return (
     <div>
-      <h2 className="text-lg font-semibold mb-4">Notificaciones</h2>
+      <h2 className="text-lg font-semibold mb-4">Notifications</h2>
       <div className="flex flex-col gap-4">
         <label className="flex items-center gap-2">
           <input
@@ -319,7 +319,7 @@ function NotificationSettings() {
             onChange={() => setEmailNotif(!emailNotif)}
             className="accent-blue-600"
           />
-          Recibir notificaciones por correo electrónico
+          Receive email notifications
         </label>
         <label className="flex items-center gap-2">
           <input
@@ -328,7 +328,7 @@ function NotificationSettings() {
             onChange={() => setPushNotif(!pushNotif)}
             className="accent-blue-600"
           />
-          Recibir notificaciones push
+          Receive push notifications
         </label>
       </div>
     </div>
@@ -345,7 +345,7 @@ export function SettingFooter({ onSave }: { onSave: () => void }) {
           onSave();
         }}
       >
-        Guardar cambios
+        Save changes
       </button>
     </div>
   );
