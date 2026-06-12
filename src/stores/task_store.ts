@@ -8,7 +8,6 @@ import {
 } from "../services/task_services";
 import { Task } from "../types/task";
 import toast from "react-hot-toast";
-import { array } from "astro:schema";
 import { FilterType } from "./useFilterStore";
 
 type TaskState = {
