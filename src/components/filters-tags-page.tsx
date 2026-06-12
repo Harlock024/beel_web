@@ -161,13 +161,7 @@ export default function FiltersTagsPage() {
                 onValueChange={(value) => setSelectedColor(value)}
               >
                 <SelectTrigger className="w-full">
-                  <div className="flex items-center gap-2">
-                    <span
-                      className="w-3 h-3 rounded-full"
-                      style={{ backgroundColor: selectedColor }}
-                    />
-                    <SelectValue placeholder={selectedColorName} />
-                  </div>
+                  <SelectValue placeholder={selectedColorName} />
                 </SelectTrigger>
                 <SelectContent>
                   {TAG_COLORS.map((color) => (
