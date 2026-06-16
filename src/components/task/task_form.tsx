@@ -1,22 +1,47 @@
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { Task } from "@/types/task";
 import { useTaskStore } from "@/stores/task_store";
+import { FilterType } from "@/stores/useFilterStore";
+import { format, addDays } from "date-fns";
 
 import { Plus } from "lucide-react";
 import { useListStore } from "@/stores/list_store";
 import toast from "react-hot-toast";
 
-export function TaskForm() {
+export function TaskForm({
+  filter,
+  list_id,
+}: {
+  filter?: FilterType;
+  list_id?: string;
+}) {
   const { addTask } = useTaskStore();
-  const { selectedListId } = useListStore();
+  const { selectedListId, clearSelectedList } = useListStore();
   const [taskName, setTaskName] = useState("");
+
+  useEffect(() => {
+    if (filter && !list_id) {
+      clearSelectedList();
+    }
+  }, [filter, list_id, clearSelectedList]);
+
+  function getDueDate(): string | undefined {
+    if (filter === "today") {
+      return format(new Date(), "yyyy-MM-dd");
+    }
+    if (filter === "upcoming") {
+      return format(addDays(new Date(), 1), "yyyy-MM-dd");
+    }
+    return undefined;
+  }
 
   function handleAddTask(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (taskName !== null) {
       const newTask: Task = {
         title: taskName,
-        list_id: selectedListId ?? undefined,
+        list_id: list_id ?? selectedListId ?? undefined,
+        due_date: getDueDate(),
         is_completed: false,
       };
       addTask(newTask);

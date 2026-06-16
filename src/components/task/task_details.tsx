@@ -5,7 +5,8 @@ import { Subtask } from "@/types/subTask";
 import { useTaskStore } from "@/stores/task_store";
 import { useTagStore } from "@/stores/tag_store";
 import { FetchSubtasks } from "@/services/subtask_services";
-import { Check, Expand, Minimize, Plus, Trash2, X } from "lucide-react";
+import { UpdateTask } from "@/services/task_services";
+import { Check, ChevronRight, PanelRightOpen, Plus, X } from "lucide-react";
 import { Button } from "../ui/button";
 import { format } from "date-fns";
 import { CalendarDemo } from "../calendar/CalentadarDemo";
@@ -19,7 +20,6 @@ import {
 import { cn } from "@/lib/utils";
 import toast from "react-hot-toast";
 import { List } from "@/types/list";
-import { useSidebarStore } from "@/stores/sidebarStore";
 import {
   Select,
   SelectContent,
@@ -28,6 +28,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Checkbox } from "../ui/checkbox";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 type TaskDetailsProps = {
   className?: string;
@@ -36,91 +42,26 @@ type TaskDetailsProps = {
 export function TaskDetails({ className }: TaskDetailsProps) {
   const { updateTask, removeTask, closeTask, task } = useTaskStore();
   const { lists } = useListStore();
-  const { setIsOpen: setSidebarOpen } = useSidebarStore();
   const [currentTask, setCurrentTask] = useState<Task | undefined>(task);
-  const [isOverlay, setIsOverlay] = useState(false);
-  const [isFullScreen, setIsFullScreen] = useState(false);
+  const [isFullScreen, setIsFullScreen] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
-  const [isResizing, setIsResizing] = useState(false);
-  const sidebarRef = useRef<HTMLDivElement>(null);
-  const widthRef = useRef(400);
-  const debounceRef = useRef<NodeJS.Timeout | null>(null);
-
-  const startResizing = (e: React.MouseEvent) => {
-    e.preventDefault();
-    setIsResizing(true);
-
-    const startX = e.clientX;
-    const startWidth = sidebarRef.current?.offsetWidth || 400;
-
-    document.body.style.cursor = "col-resize";
-    document.body.style.userSelect = "none";
-
-    const resize = (e: MouseEvent) => {
-      if (!sidebarRef.current) return;
-
-      const newWidth = Math.min(
-        Math.max(startWidth + (startX - e.clientX), 300),
-        window.innerWidth * 0.8,
-      );
-
-      sidebarRef.current.style.width = `${newWidth}px`;
-      widthRef.current = newWidth;
-    };
-
-    const stopResizing = () => {
-      document.body.style.cursor = "";
-      document.body.style.userSelect = "";
-      document.removeEventListener("mousemove", resize);
-      document.removeEventListener("mouseup", stopResizing);
-      setIsResizing(false);
-
-      const finalWidth = widthRef.current;
-      if (finalWidth > window.innerWidth / 2) {
-        setIsOverlay(true);
-        setSidebarOpen(false);
-      } else {
-        setIsOverlay(false);
-        setSidebarOpen(true);
-      }
-    };
-
-    document.addEventListener("mousemove", resize);
-    document.addEventListener("mouseup", stopResizing);
-  };
 
   useEffect(() => {
     setCurrentTask(task);
-    setIsFullScreen(false);
-    setIsOverlay(false);
-    setSidebarOpen(true);
-    if (task && sidebarRef.current) {
-      sidebarRef.current.style.width = `${widthRef.current}px`;
-    }
-  }, [task]);
+    setIsFullScreen(true);
+  }, [task?.id]);
 
   const handleClose = () => {
-    setIsFullScreen(false);
-    setIsOverlay(false);
-    setSidebarOpen(true);
+    setIsFullScreen(true);
     closeTask();
   };
 
-  const toggleFullScreen = () => {
-    setIsFullScreen((prev) => {
-      const next = !prev;
-      if (next) {
-        setSidebarOpen(false);
-        setIsOverlay(true);
-      } else {
-        setSidebarOpen(true);
-        setIsOverlay(false);
-        if (sidebarRef.current) {
-          sidebarRef.current.style.width = `${widthRef.current}px`;
-        }
-      }
-      return next;
-    });
+  const handleSendToSidebar = () => {
+    setIsFullScreen(false);
+  };
+
+  const handleBackToModal = () => {
+    setIsFullScreen(true);
   };
 
   useEffect(() => {
@@ -220,47 +161,6 @@ export function TaskDetails({ className }: TaskDetailsProps) {
     });
   };
 
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (!sidebarRef.current) return;
-
-      const target = event.target as HTMLElement;
-
-      const isClickInsideSidebar = sidebarRef.current.contains(target);
-
-      const isSelectContent = !!target.closest(
-        [
-          "[data-radix-select-content]",
-          "[data-radix-select-trigger-content",
-          ["data-radix-select-value"],
-        ].join(", "),
-      );
-      const isPopoverContent = !!target.closest(
-        "[data-radix-popper-content-wrapper]",
-      );
-      const isAnyRadixPortal = !!target.closest("[data-radix-portal]");
-
-      if (
-        isClickInsideSidebar ||
-        isSelectContent ||
-        isPopoverContent ||
-        isAnyRadixPortal
-      ) {
-        return;
-      }
-
-      closeTask();
-    };
-
-    if (task) {
-      document.addEventListener("mousedown", handleClickOutside);
-    }
-
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [task, closeTask]);
-
   function hasTaskChanged() {
     if (!currentTask || !task) return false;
     if (currentTask.id !== task.id) return true;
@@ -273,138 +173,146 @@ export function TaskDetails({ className }: TaskDetailsProps) {
       (currentTask.column_id || "") !== (task.column_id || "")
     );
   }
+
+  const taskContent = currentTask ? (
+    <>
+      <TaskDetailsActions
+        currentTask={currentTask}
+        lists={lists}
+        handleListChange={handleListChange}
+        handleDateChange={handleDateChange}
+        handleColumnChange={handleColumnChange}
+      />
+
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          handleEditTask();
+        }}
+        className="px-6 py-4"
+      >
+        <textarea
+          className="w-full bg-transparent outline-none resize-none min-h-[200px] text-sm placeholder:text-muted-foreground border-muted-foreground focus:border-primary transition-all"
+          value={currentTask.description || ""}
+          onChange={(e) =>
+            setCurrentTask((prev) =>
+              prev ? { ...prev, description: e.target.value } : undefined,
+            )
+          }
+          placeholder="Write something about this task..."
+        />
+      </form>
+
+      {currentTask.id && !currentTask.id.startsWith("temp-") && (
+        <SubtaskSection task={currentTask} />
+      )}
+
+      {currentTask.id && !currentTask.id.startsWith("temp-") && (
+        <TagSection task={currentTask} />
+      )}
+    </>
+  ) : null;
+
   return (
-    <div>
-      {task && isFullScreen && (
-        <div
-          className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4"
-          onClick={handleClose}
-        >
-          <div
-            className="bg-card rounded-lg shadow-2xl w-full max-w-3xl h-[85vh] flex flex-col overflow-hidden"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex flex-col h-full">
-              <TaskDetailsHeader
-                task={currentTask}
-                onClose={handleClose}
-                isFullScreen={isFullScreen}
-                onExpand={toggleFullScreen}
-                onUpdateTitle={(title) =>
-                  setCurrentTask((prev) =>
-                    prev ? { ...prev, title } : undefined,
-                  )
-                }
-              />
-
-              <TaskDetailsActions
-                currentTask={currentTask}
-                lists={lists}
-                handleListChange={handleListChange}
-                handleDateChange={handleDateChange}
-                handleColumnChange={handleColumnChange}
-              />
-
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  handleEditTask();
-                }}
-                className="flex-1 overflow-y-auto px-6 py-4"
-              >
-                <textarea
-                  className="w-full bg-transparent outline-none resize-none min-h-[200px] text-sm placeholder:text-muted-foreground border-muted-foreground focus:border-primary transition-all"
-                  value={currentTask?.description || ""}
+    <>
+      <Dialog open={isFullScreen && !!task} onOpenChange={(open) => !open && handleClose()}>
+        <DialogContent showCloseButton={false} className="max-w-3xl h-[85vh] p-0 gap-0 overflow-hidden flex flex-col">
+          <DialogHeader className="px-6 py-4 border-b">
+            <div className="flex items-center justify-between gap-3">
+              <DialogTitle className="flex-1">
+                <input
+                  type="text"
+                  value={currentTask?.title || ""}
                   onChange={(e) =>
                     setCurrentTask((prev) =>
-                      prev ? { ...prev, description: e.target.value } : undefined,
+                      prev ? { ...prev, title: e.target.value } : undefined,
                     )
                   }
-                  placeholder="Write something about this task..."
+                  placeholder="Task name"
+                  className="text-xl font-semibold w-full bg-transparent outline-none border-none focus:ring-0 border-b border-transparent focus:border-primary transition-all"
                 />
-              </form>
-
-              {currentTask?.id && !currentTask.id.startsWith("temp-") && (
-                <SubtaskSection task={currentTask} />
-              )}
-
-              {currentTask?.id && !currentTask.id.startsWith("temp-") && (
-                <TagSection task={currentTask} />
-              )}
-
-              <TaskDetailsFooter
-                hasChanges={hasTaskChanged()}
-                isSaving={isSaving}
-                onSave={handleEditTask}
-                onRemove={handleRemoveTask}
-              />
+              </DialogTitle>
+              <div className="flex items-center gap-1 flex-shrink-0">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={handleSendToSidebar}
+                  title="Send to sidebar"
+                >
+                  <PanelRightOpen className="w-4 h-4" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={handleClose}
+                  title="Close"
+                >
+                  <X className="w-4 h-4" />
+                </Button>
+              </div>
             </div>
+          </DialogHeader>
+
+          <div className="flex-1 overflow-y-auto">
+            {taskContent}
           </div>
-        </div>
-      )}
+
+          <TaskDetailsFooter
+            hasChanges={hasTaskChanged()}
+            isSaving={isSaving}
+            onSave={handleEditTask}
+            onRemove={handleRemoveTask}
+          />
+        </DialogContent>
+      </Dialog>
 
       {task && !isFullScreen && (
         <div
-          ref={sidebarRef}
           className={cn(
-            "top-0 h-screen z-50 bg-card shadow-lg border-l",
-            isResizing ? "" : "transition-all duration-300",
-            isOverlay ? "fixed right-0" : "absolute right-0",
+            "top-0 h-screen z-50 bg-card shadow-lg border-l absolute right-0 transition-all duration-300",
             className,
           )}
-          style={{ width: `${widthRef.current}px` }}
+          style={{ width: "400px" }}
         >
-          <div
-            className="absolute left-0 top-0 bottom-0 w-2 cursor-col-resize hover:bg-primary/30 z-10"
-            onMouseDown={startResizing}
-          ></div>
           <div className="flex flex-col h-full">
-            <TaskDetailsHeader
-              task={currentTask}
-              onClose={handleClose}
-              isFullScreen={isFullScreen}
-              onExpand={toggleFullScreen}
-              onUpdateTitle={(title) =>
-                setCurrentTask((prev) =>
-                  prev ? { ...prev, title } : undefined,
-                )
-              }
-            />
-
-            <TaskDetailsActions
-              currentTask={currentTask}
-              lists={lists}
-              handleListChange={handleListChange}
-              handleDateChange={handleDateChange}
-              handleColumnChange={handleColumnChange}
-            />
-
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                handleEditTask();
-              }}
-              className="flex-1 overflow-y-auto px-6 py-4"
-            >
-              <textarea
-                className="w-full bg-transparent outline-none resize-none min-h-[200px] text-sm placeholder:text-muted-foreground border-muted-foreground focus:border-primary transition-all"
-                value={currentTask?.description || ""}
+            <div className="px-6 py-4 border-b">
+              <div className="flex items-center justify-between mb-2">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={handleClose}
+                >
+                  <X className="w-4 h-4" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={handleBackToModal}
+                  title="Expand to modal"
+                >
+                  <PanelRightOpen className="w-4 h-4 rotate-180" />
+                </Button>
+              </div>
+              <input
+                type="text"
+                value={currentTask?.title || ""}
                 onChange={(e) =>
                   setCurrentTask((prev) =>
-                    prev ? { ...prev, description: e.target.value } : undefined,
+                    prev ? { ...prev, title: e.target.value } : undefined,
                   )
                 }
-                placeholder="Write something about this task..."
+                placeholder="Task name"
+                className="text-xl font-semibold w-full bg-transparent outline-none border-none focus:ring-0 border-b border-transparent focus:border-primary transition-all"
               />
-            </form>
+            </div>
 
-            {currentTask?.id && !currentTask.id.startsWith("temp-") && (
-              <SubtaskSection task={currentTask} />
-            )}
-
-            {currentTask?.id && !currentTask.id.startsWith("temp-") && (
-              <TagSection task={currentTask} />
-            )}
+            <div className="flex-1 overflow-y-auto">
+              {taskContent}
+            </div>
 
             <TaskDetailsFooter
               hasChanges={hasTaskChanged()}
@@ -415,61 +323,10 @@ export function TaskDetails({ className }: TaskDetailsProps) {
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 }
 
-function TaskDetailsHeader({
-  task,
-  onUpdateTitle,
-  onClose,
-  onExpand,
-  isFullScreen,
-}: {
-  task: Task | undefined;
-  onUpdateTitle: (title: string) => void;
-  onClose: () => void;
-  onExpand?: () => void;
-  isFullScreen?: boolean;
-}) {
-  return (
-    <div className="px-6 py-4">
-      <div className="flex  items-center  mb-4">
-        <div className="flex  w-full items-star justify-between  gap-2">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8"
-            onClick={onClose}
-          >
-            <X className="w-4 h-4" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8"
-            onClick={onExpand}
-          >
-            {isFullScreen ? (
-              <Minimize className="w-4 h-4" />
-            ) : (
-              <Expand className="w-4 h-4" />
-            )}
-          </Button>
-        </div>
-      </div>
-
-      <input
-        type="text"
-        value={task?.title || ""}
-        onChange={(e) => onUpdateTitle(e.target.value)}
-        placeholder="Task name"
-        className="text-2xl font-semibold w-full bg-transparent outline-none border-none
-                   focus:ring-0 border-b border-transparent focus:border-primary transition-all"
-      />
-    </div>
-  );
-}
 function TaskDetailsActions({
   currentTask,
   lists,
@@ -623,6 +480,7 @@ function SubtaskSection({ task }: { task: Task }) {
   const [newTitle, setNewTitle] = useState("");
   const [subtasks, setSubtasks] = useState<Subtask[]>(task.sub_tasks || []);
   const [loading, setLoading] = useState(false);
+  const [selectedSubtask, setSelectedSubtask] = useState<Subtask | null>(null);
 
   const fetchSubtasks = async () => {
     if (!task.id) return;
@@ -641,14 +499,17 @@ function SubtaskSection({ task }: { task: Task }) {
     fetchSubtasks();
   }, [task.id]);
 
-  const completedCount = subtasks.filter((s) => s.done).length;
+  useEffect(() => {
+    setSubtasks(task.sub_tasks || []);
+  }, [task.sub_tasks]);
 
-  const handleAdd = () => {
+  const handleAdd = async () => {
     const title = newTitle.trim();
     if (!title) return;
-    addSubtask(task.id!, title);
+    console.log(`SubtaskSection.handleAdd: task.id=${task.id}, title=${title}`);
+    await addSubtask(task.id!, title);
     setNewTitle("");
-    fetchSubtasks();
+    await fetchSubtasks();
   };
 
   return (
@@ -658,7 +519,7 @@ function SubtaskSection({ task }: { task: Task }) {
           Subtasks
           {subtasks.length > 0 && (
             <span className="ml-2 text-muted-foreground">
-              {completedCount}/{subtasks.length}
+              {subtasks.length}
             </span>
           )}
         </h3>
@@ -669,36 +530,26 @@ function SubtaskSection({ task }: { task: Task }) {
           <span className="text-xs text-muted-foreground">Loading...</span>
         ) : (
           subtasks.map((subtask) => (
-            <div
+            <button
               key={subtask.id}
-              className="flex items-center gap-2 py-1.5 px-2 rounded-md hover:bg-accent/50 group"
+              onClick={() => setSelectedSubtask(subtask)}
+              className="w-full flex items-center gap-2 py-2 px-3 rounded-md hover:bg-accent/50 group text-left transition-colors"
             >
               <Checkbox
-                checked={subtask.done}
+                checked={subtask.is_completed}
+                onClick={(e) => e.stopPropagation()}
                 onCheckedChange={() => {
                   toggleSubtask(task.id!, subtask.id);
-                  fetchSubtasks();
                 }}
                 className="h-4 w-4"
               />
-              <span
-                className={cn(
-                  "flex-1 text-sm",
-                  subtask.done && "line-through text-muted-foreground",
-                )}
-              >
+              <span className={cn("flex-1 text-sm", subtask.is_completed && "line-through text-muted-foreground")}>
                 {subtask.title}
               </span>
-              <button
-                onClick={() => {
-                  removeSubtask(task.id!, subtask.id);
-                  fetchSubtasks();
-                }}
-                className="opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive"
-              >
-                <Trash2 className="h-3.5 w-3.5" />
-              </button>
-            </div>
+              <span className="opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground">
+                <ChevronRight className="h-4 w-4" />
+              </span>
+            </button>
           ))
         )}
       </div>
@@ -719,7 +570,186 @@ function SubtaskSection({ task }: { task: Task }) {
           className="flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
         />
       </form>
+
+      {selectedSubtask && (
+        <SubtaskModal
+          subtask={selectedSubtask}
+          taskId={task.id!}
+          onClose={() => setSelectedSubtask(null)}
+          onUpdate={fetchSubtasks}
+        />
+      )}
     </div>
+  );
+}
+
+function SubtaskModal({
+  subtask,
+  taskId,
+  onClose,
+  onUpdate,
+}: {
+  subtask: Subtask;
+  taskId: string;
+  onClose: () => void;
+  onUpdate: () => void;
+}) {
+  const { toggleSubtask, removeSubtask } = useTaskStore();
+  const [newTitle, setNewTitle] = useState(subtask.title);
+  const [subtasks, setSubtasks] = useState<Subtask[]>([]);
+  const [newSubtaskTitle, setNewSubtaskTitle] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const fetchSubtasks = async () => {
+    setLoading(true);
+    try {
+      const fetched = await FetchSubtasks(subtask.id);
+      setSubtasks(fetched);
+    } catch {
+      setSubtasks([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchSubtasks();
+  }, [subtask.id]);
+
+  const handleComplete = async () => {
+    await UpdateTask({ is_completed: true }, subtask.id);
+    onUpdate();
+    onClose();
+  };
+
+  const handleRemove = async () => {
+    await removeSubtask(taskId, subtask.id);
+    onUpdate();
+    onClose();
+  };
+
+  const handleAddSubtask = async () => {
+    const title = newSubtaskTitle.trim();
+    if (!title) return;
+    const { addSubtask } = useTaskStore.getState();
+    await addSubtask(subtask.id, title);
+    setNewSubtaskTitle("");
+    await fetchSubtasks();
+    onUpdate();
+  };
+
+  return (
+    <Dialog open onOpenChange={(open) => !open && onClose()}>
+      <DialogContent showCloseButton={false} className="max-w-2xl h-[80vh] p-0 gap-0 overflow-hidden flex flex-col">
+        <DialogHeader className="px-6 py-4 border-b">
+          <div className="flex items-center justify-between gap-3">
+            <DialogTitle className="flex-1">
+              <input
+                type="text"
+                value={newTitle}
+                onChange={(e) => setNewTitle(e.target.value)}
+                className="text-lg font-semibold w-full bg-transparent outline-none border-none focus:ring-0 border-b border-transparent focus:border-primary transition-all"
+                placeholder="Subtask name"
+              />
+            </DialogTitle>
+            <div className="flex items-center gap-1 flex-shrink-0">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleComplete}
+                className="gap-2"
+              >
+                <Check className="w-4 h-4" />
+                Mark complete
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8"
+                onClick={onClose}
+              >
+                <X className="w-4 h-4" />
+              </Button>
+            </div>
+          </div>
+        </DialogHeader>
+
+        <div className="flex-1 overflow-y-auto px-6 py-4">
+          <div className="space-y-4">
+            <div>
+              <h4 className="text-sm font-medium text-foreground mb-2">
+                Description
+              </h4>
+              <textarea
+                className="w-full bg-transparent outline-none resize-none min-h-[100px] text-sm placeholder:text-muted-foreground border border-border rounded-md p-3 focus:border-primary transition-all"
+                placeholder="Add a description..."
+              />
+            </div>
+
+            <div>
+              <h4 className="text-sm font-medium text-foreground mb-2">
+                Subtasks
+                {subtasks.length > 0 && (
+                  <span className="ml-2 text-muted-foreground">
+                    {subtasks.length}
+                  </span>
+                )}
+              </h4>
+              <div className="space-y-1">
+                {subtasks.map((st) => (
+                  <div
+                    key={st.id}
+                    className="flex items-center gap-2 py-1.5 px-2 rounded-md hover:bg-accent/50"
+                  >
+                    <Checkbox
+                      checked={st.is_completed}
+                      onCheckedChange={() => {
+                        toggleSubtask(subtask.id, st.id);
+                      }}
+                      className="h-4 w-4"
+                    />
+                    <span className={cn("flex-1 text-sm", st.is_completed && "line-through text-muted-foreground")}>
+                      {st.title}
+                    </span>
+                  </div>
+                ))}
+              </div>
+
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  handleAddSubtask();
+                }}
+                className="flex items-center gap-2 mt-2"
+              >
+                <Plus className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                <input
+                  type="text"
+                  value={newSubtaskTitle}
+                  onChange={(e) => setNewSubtaskTitle(e.target.value)}
+                  placeholder="Add subtask..."
+                  className="flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+                />
+              </form>
+            </div>
+          </div>
+        </div>
+
+        <div className="px-6 py-4 border-t mt-auto sticky bottom-0 bg-card z-10 flex items-center justify-between gap-4">
+          <Button
+            variant="destructive"
+            size="sm"
+            onClick={handleRemove}
+            className="text-sm"
+          >
+            Remove Subtask
+          </Button>
+          <Button variant="default" size="sm" onClick={onClose} className="text-sm">
+            Done
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }
 

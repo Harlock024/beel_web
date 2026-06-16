@@ -8,8 +8,6 @@ import {
 } from "../services/task_services";
 import {
   CreateSubtask,
-  DeleteSubtask,
-  UpdateSubtask,
 } from "../services/subtask_services";
 import { Task } from "../types/task";
 import { Subtask } from "../types/subTask";
@@ -31,6 +29,37 @@ type TaskState = {
   toggleSubtask: (taskId: string, subtaskId: string) => Promise<void>;
   removeSubtask: (taskId: string, subtaskId: string) => Promise<void>;
 };
+
+function findSubtask(state: TaskState, subtaskId: string): Subtask | undefined {
+  for (const task of state.tasks.values()) {
+    const found = findInList(task.sub_tasks || [], subtaskId);
+    if (found) return found;
+  }
+  if (state.task) {
+    return findInList(state.task.sub_tasks || [], subtaskId);
+  }
+  return undefined;
+}
+
+function findInList(list: Subtask[], id: string): Subtask | undefined {
+  for (const s of list) {
+    if (s.id === id) return s;
+    const found = findInList(s.sub_tasks || [], id);
+    if (found) return found;
+  }
+  return undefined;
+}
+
+function addSubtaskToList(
+  list: Subtask[],
+  parentId: string,
+  subtask: Subtask,
+): Subtask[] {
+  return list.map((s) => {
+    if (s.id === parentId) return { ...s, sub_tasks: [...(s.sub_tasks || []), subtask] };
+    return { ...s, sub_tasks: addSubtaskToList(s.sub_tasks || [], parentId, subtask) };
+  });
+}
 
 export const useTaskStore = create<TaskState>((set, get) => ({
   tasks: new Map(),
@@ -156,171 +185,219 @@ export const useTaskStore = create<TaskState>((set, get) => ({
     }
   },
 
-  addSubtask: async (taskId, title) => {
+  addSubtask: async (parentId, title) => {
     const tempId = `temp-${Date.now()}`;
-    const tempSubtask: Subtask = { id: tempId, title, done: false };
+    const tempSubtask: Subtask = { id: tempId, title };
+
+    function addToList(list: Subtask[] | undefined, temp: Subtask): Subtask[] {
+      return [...(list || []), temp];
+    }
+
+    function replaceInList(list: Subtask[] | undefined, tempId: string, real: Subtask): Subtask[] {
+      if (!list) return [];
+      return list.map((s) => {
+        if (s.id === tempId) return real;
+        return { ...s, sub_tasks: replaceInList(s.sub_tasks, tempId, real) };
+      });
+    }
+
+    function removeFromList(list: Subtask[], tempId: string): Subtask[] {
+      return list
+        .filter((s) => s.id !== tempId)
+        .map((s) => ({ ...s, sub_tasks: removeFromList(s.sub_tasks || [], tempId) }));
+    }
 
     set((state) => {
-      const task = state.tasks.get(taskId);
-      if (!task) return state;
+      const task = state.tasks.get(parentId);
+      if (task) {
+        const updated = new Map(state.tasks);
+        updated.set(parentId, {
+          ...task,
+          sub_tasks: addToList(task.sub_tasks, tempSubtask),
+        });
+        const currentTask =
+          state.task?.id === parentId
+            ? { ...state.task, sub_tasks: addToList(state.task.sub_tasks, tempSubtask) }
+            : state.task;
+        return { tasks: updated, task: currentTask };
+      }
+
       const updated = new Map(state.tasks);
-      updated.set(taskId, {
-        ...task,
-        sub_tasks: [...(task.sub_tasks || []), tempSubtask],
-      });
-      const currentTask =
-        state.task?.id === taskId
-          ? { ...state.task, sub_tasks: [...(state.task.sub_tasks || []), tempSubtask] }
-          : state.task;
+      for (const [taskId, task] of updated) {
+        const newSubs = replaceInList(task.sub_tasks || [], parentId, tempSubtask);
+        if (newSubs !== task.sub_tasks) {
+          updated.set(taskId, { ...task, sub_tasks: newSubs });
+        }
+      }
+      const currentTask = state.task
+        ? { ...state.task, sub_tasks: replaceInList(state.task.sub_tasks || [], parentId, tempSubtask) }
+        : state.task;
       return { tasks: updated, task: currentTask };
     });
 
     try {
-      const created = await CreateSubtask(taskId, title);
+      const created = await CreateSubtask(parentId, title);
       set((state) => {
-        const task = state.tasks.get(taskId);
-        if (!task) return state;
+        const task = state.tasks.get(parentId);
+        if (task) {
+          const updated = new Map(state.tasks);
+          updated.set(parentId, {
+            ...task,
+            sub_tasks: replaceInList(task.sub_tasks || [], tempId, created),
+          });
+          const currentTask =
+            state.task?.id === parentId
+              ? { ...state.task, sub_tasks: replaceInList(state.task.sub_tasks || [], tempId, created) }
+              : state.task;
+          return { tasks: updated, task: currentTask };
+        }
+
         const updated = new Map(state.tasks);
-        updated.set(taskId, {
-          ...task,
-          sub_tasks: (task.sub_tasks || []).map((s) =>
-            s.id === tempId ? created : s,
-          ),
-        });
-        const currentTask =
-          state.task?.id === taskId
-            ? {
-                ...state.task,
-                sub_tasks: (state.task.sub_tasks || []).map((s) =>
-                  s.id === tempId ? created : s,
-                ),
-              }
-            : state.task;
+        for (const [taskId, task] of updated) {
+          const newSubs = replaceInList(task.sub_tasks || [], tempId, created);
+          if (newSubs !== task.sub_tasks) {
+            updated.set(taskId, { ...task, sub_tasks: newSubs });
+          }
+        }
+        const currentTask = state.task
+          ? { ...state.task, sub_tasks: replaceInList(state.task.sub_tasks || [], tempId, created) }
+          : state.task;
         return { tasks: updated, task: currentTask };
       });
     } catch (error) {
       set((state) => {
-        const task = state.tasks.get(taskId);
-        if (!task) return state;
+        const task = state.tasks.get(parentId);
+        if (task) {
+          const updated = new Map(state.tasks);
+          updated.set(parentId, {
+            ...task,
+            sub_tasks: removeFromList(task.sub_tasks || [], tempId),
+          });
+          const currentTask =
+            state.task?.id === parentId
+              ? { ...state.task, sub_tasks: removeFromList(state.task.sub_tasks || [], tempId) }
+              : state.task;
+          return { tasks: updated, task: currentTask };
+        }
+
         const updated = new Map(state.tasks);
-        updated.set(taskId, {
-          ...task,
-          sub_tasks: (task.sub_tasks || []).filter((s) => s.id !== tempId),
-        });
-        const currentTask =
-          state.task?.id === taskId
-            ? {
-                ...state.task,
-                sub_tasks: (state.task.sub_tasks || []).filter(
-                  (s) => s.id !== tempId,
-                ),
-              }
-            : state.task;
+        for (const [taskId, task] of updated) {
+          const newSubs = removeFromList(task.sub_tasks || [], tempId);
+          if (newSubs !== task.sub_tasks) {
+            updated.set(taskId, { ...task, sub_tasks: newSubs });
+          }
+        }
+        const currentTask = state.task
+          ? { ...state.task, sub_tasks: removeFromList(state.task.sub_tasks || [], tempId) }
+          : state.task;
         return { tasks: updated, task: currentTask };
       });
       console.error("Error al crear subtask", error);
     }
   },
 
-  toggleSubtask: async (taskId, subtaskId) => {
+  toggleSubtask: async (parentId, subtaskId) => {
     const state = get();
-    const task = state.tasks.get(taskId);
-    if (!task) return;
-    const subtask = (task.sub_tasks || []).find((s) => s.id === subtaskId);
+
+    function toggleInList(list: Subtask[] | undefined, id: string, completed: boolean | undefined): Subtask[] {
+      if (!list) return [];
+      return list.map((s) => {
+        if (s.id === id) return { ...s, is_completed: completed };
+        return { ...s, sub_tasks: toggleInList(s.sub_tasks || [], id, completed) };
+      });
+    }
+
+    const subtask = findSubtask(state, subtaskId);
     if (!subtask) return;
 
-    const toggled = { ...subtask, done: !subtask.done };
+    const newCompleted = !subtask.is_completed;
 
     set((s) => {
       const updated = new Map(s.tasks);
-      updated.set(taskId, {
-        ...task,
-        sub_tasks: (task.sub_tasks || []).map((st) =>
-          st.id === subtaskId ? toggled : st,
-        ),
-      });
-      const currentTask =
-        s.task?.id === taskId
-          ? {
-              ...s.task,
-              sub_tasks: (s.task.sub_tasks || []).map((st) =>
-                st.id === subtaskId ? toggled : st,
-              ),
-            }
-          : s.task;
+      for (const [taskId, task] of updated) {
+        const newSubs = toggleInList(task.sub_tasks || [], subtaskId, newCompleted);
+        if (newSubs !== task.sub_tasks) {
+          updated.set(taskId, { ...task, sub_tasks: newSubs });
+        }
+      }
+      const currentTask = s.task
+        ? { ...s.task, sub_tasks: toggleInList(s.task.sub_tasks || [], subtaskId, newCompleted) }
+        : s.task;
       return { tasks: updated, task: currentTask };
     });
 
     try {
-      await UpdateSubtask(taskId, subtaskId, { done: toggled.done });
+      await UpdateTask({ is_completed: newCompleted }, subtaskId);
     } catch (error) {
       set((s) => {
         const updated = new Map(s.tasks);
-        updated.set(taskId, {
-          ...task,
-          sub_tasks: (task.sub_tasks || []).map((st) =>
-            st.id === subtaskId ? subtask : st,
-          ),
-        });
-        const currentTask =
-          s.task?.id === taskId
-            ? {
-                ...s.task,
-                sub_tasks: (s.task.sub_tasks || []).map((st) =>
-                  st.id === subtaskId ? subtask : st,
-                ),
-              }
-            : s.task;
+        for (const [taskId, task] of updated) {
+          const newSubs = toggleInList(task.sub_tasks || [], subtaskId, subtask.is_completed);
+          if (newSubs !== task.sub_tasks) {
+            updated.set(taskId, { ...task, sub_tasks: newSubs });
+          }
+        }
+        const currentTask = s.task
+          ? { ...s.task, sub_tasks: toggleInList(s.task.sub_tasks || [], subtaskId, subtask.is_completed) }
+          : s.task;
         return { tasks: updated, task: currentTask };
       });
       console.error("Error al actualizar subtask", error);
     }
   },
 
-  removeSubtask: async (taskId, subtaskId) => {
+  removeSubtask: async (parentId, subtaskId) => {
     const state = get();
-    const task = state.tasks.get(taskId);
-    if (!task) return;
-    const subtask = (task.sub_tasks || []).find((s) => s.id === subtaskId);
-    if (!subtask) return;
 
-    set((s) => {
-      const updated = new Map(s.tasks);
-      updated.set(taskId, {
-        ...task,
-        sub_tasks: (task.sub_tasks || []).filter((st) => st.id !== subtaskId),
-      });
-      const currentTask =
-        s.task?.id === taskId
-          ? {
-              ...s.task,
-              sub_tasks: (s.task.sub_tasks || []).filter(
-                (st) => st.id !== subtaskId,
-              ),
-            }
-          : s.task;
-      return { tasks: updated, task: currentTask };
-    });
+    function removeFromList(list: Subtask[], id: string): Subtask[] {
+      return list
+        .filter((s) => s.id !== id)
+        .map((s) => ({ ...s, sub_tasks: removeFromList(s.sub_tasks || [], id) }));
+    }
 
-    try {
-      await DeleteSubtask(taskId, subtaskId);
-    } catch (error) {
+    const removed = findSubtask(state, subtaskId);
+    console.log(`removeSubtask called: parentId=${parentId}, subtaskId=${subtaskId}, found=${!!removed}`);
+    
+    if (!removed) {
+      console.log(`Subtask ${subtaskId} not found, trying direct delete`);
+    } else {
       set((s) => {
         const updated = new Map(s.tasks);
-        updated.set(taskId, {
-          ...task,
-          sub_tasks: [...(task.sub_tasks || []), subtask],
-        });
-        const currentTask =
-          s.task?.id === taskId
-            ? {
-                ...s.task,
-                sub_tasks: [...(s.task.sub_tasks || []), subtask],
-              }
-            : s.task;
+        for (const [taskId, task] of updated) {
+          const newSubs = removeFromList(task.sub_tasks || [], subtaskId);
+          if (newSubs !== task.sub_tasks) {
+            updated.set(taskId, { ...task, sub_tasks: newSubs });
+          }
+        }
+        const currentTask = s.task
+          ? { ...s.task, sub_tasks: removeFromList(s.task.sub_tasks || [], subtaskId) }
+          : s.task;
         return { tasks: updated, task: currentTask };
       });
-      console.error("Error al eliminar subtask", error);
+    }
+
+    try {
+      console.log(`Calling DeleteTask for subtask ${subtaskId}`);
+      await DeleteTask(subtaskId);
+      console.log(`DeleteTask succeeded for ${subtaskId}`);
+    } catch (error) {
+      console.error(`DeleteTask failed for ${subtaskId}:`, error);
+      if (removed) {
+        set((s) => {
+          const updated = new Map(s.tasks);
+          for (const [taskId, task] of updated) {
+            const newSubs = addSubtaskToList(task.sub_tasks || [], parentId, removed);
+            if (newSubs !== task.sub_tasks) {
+              updated.set(taskId, { ...task, sub_tasks: newSubs });
+            }
+          }
+          const currentTask = s.task
+            ? { ...s.task, sub_tasks: addSubtaskToList(s.task.sub_tasks || [], parentId, removed) }
+            : s.task;
+          return { tasks: updated, task: currentTask };
+        });
+      }
+      throw error;
     }
   },
 }));

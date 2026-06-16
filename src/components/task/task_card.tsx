@@ -15,7 +15,7 @@ import { cn } from "@/lib/utils";
 
 export function TaskCard({ task }: { task: Task }) {
   const { lists } = useListStore();
-  const { setTask, removeTask } = useTaskStore();
+  const { setTask, updateTask } = useTaskStore();
   const [isCompleting, setIsCompleting] = useState(false);
 
   const list = lists.find((list) => list.id === task.list_id);
@@ -35,7 +35,7 @@ export function TaskCard({ task }: { task: Task }) {
     toast.success("Task completed");
     
     setTimeout(() => {
-      removeTask(task.id!);
+      updateTask({ is_completed: true }, task.id!);
     }, 800);
   };
   

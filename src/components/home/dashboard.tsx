@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useAuthStore } from "@/stores/useAuthStore";
 import { FetchBoards, Board } from "@/services/board_services";
 import { FetchLists } from "@/services/list_services";
-import { FetchTasksByFilter } from "@/services/task_services";
+import { FetchTasksByFilter, FetchTaskCount } from "@/services/task_services";
 import { FetchAllTags } from "@/services/tag_services";
 import { Task } from "@/types/task";
 import { List } from "@/types/list";
@@ -26,6 +26,7 @@ export function Dashboard() {
   const [lists, setLists] = useState<List[]>([]);
   const [recentTasks, setRecentTasks] = useState<Task[]>([]);
   const [upcomingTasks, setUpcomingTasks] = useState<Task[]>([]);
+  const [totalTasks, setTotalTasks] = useState(0);
   const [completedCount, setCompletedCount] = useState(0);
   const [tags, setTags] = useState<Tag[]>([]);
   const [loading, setLoading] = useState(true);
@@ -33,7 +34,7 @@ export function Dashboard() {
   useEffect(() => {
     async function load() {
       try {
-        const [boardsRes, listsRes, recentRes, upcomingRes, completedRes, tagsRes] =
+        const [boardsRes, listsRes, recentRes, upcomingRes, completedRes, tagsRes, countRes] =
           await Promise.all([
             FetchBoards(),
             FetchLists(),
@@ -41,6 +42,7 @@ export function Dashboard() {
             FetchTasksByFilter("upcoming"),
             FetchTasksByFilter("completed"),
             FetchAllTags(),
+            FetchTaskCount(),
           ]);
 
         setBoards(boardsRes || []);
@@ -48,6 +50,7 @@ export function Dashboard() {
         setRecentTasks(recentRes?.tasks || []);
         setUpcomingTasks(upcomingRes?.tasks || []);
         setCompletedCount(completedRes?.tasks?.length || 0);
+        setTotalTasks(countRes?.count || 0);
         setTags(tagsRes || []);
       } catch (err) {
         console.error("Dashboard load error:", err);
@@ -57,8 +60,6 @@ export function Dashboard() {
     }
     load();
   }, []);
-
-  const totalTasks = recentTasks.length + upcomingTasks.length + completedCount;
 
   const stats = [
     {
