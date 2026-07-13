@@ -8,15 +8,9 @@ import { useKanbanStore } from "@/stores/kanban_store";
 import { useTaskStore } from "@/stores/task_store";
 import { KanbanColumn } from "./kanban_column";
 import { KanbanColumnForm } from "./kanban_column_form";
-import { Plus, ChevronDown, Pencil, Trash2 } from "lucide-react";
+import { BoardSelector } from "./board_selector";
+import { Pencil, Trash2, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { cn } from "@/lib/utils";
 
 export function KanbanBoard() {
   const {
@@ -25,16 +19,13 @@ export function KanbanBoard() {
     columns,
     loaded,
     fetchBoards,
-    selectBoard,
-    createBoard,
     renameBoard,
     removeBoard,
+    deselectBoard,
     moveTask,
     moveColumn,
   } = useKanbanStore();
   const { tasks } = useTaskStore();
-  const [isCreating, setIsCreating] = useState(false);
-  const [newTitle, setNewTitle] = useState("");
   const [isRenaming, setIsRenaming] = useState(false);
   const [renameValue, setRenameValue] = useState("");
 
@@ -58,53 +49,8 @@ export function KanbanBoard() {
     );
   }
 
-  if (boards.length === 0) {
-    return (
-      <div className="flex flex-col items-center justify-center h-[calc(100vh-100px)] gap-4">
-        <p className="text-muted-foreground">No boards yet</p>
-        {isCreating ? (
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              if (newTitle.trim()) {
-                createBoard(newTitle.trim());
-                setNewTitle("");
-                setIsCreating(false);
-              }
-            }}
-            className="flex gap-2"
-          >
-            <input
-              autoFocus
-              type="text"
-              value={newTitle}
-              onChange={(e) => setNewTitle(e.target.value)}
-              placeholder="Board name..."
-              className="px-3 py-2 text-sm border rounded-md bg-background outline-none focus:ring-1 focus:ring-ring"
-            />
-            <Button type="submit" size="sm">
-              Create
-            </Button>
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={() => {
-                setIsCreating(false);
-                setNewTitle("");
-              }}
-            >
-              Cancel
-            </Button>
-          </form>
-        ) : (
-          <Button onClick={() => setIsCreating(true)}>
-            <Plus className="h-4 w-4 mr-2" />
-            Create Board
-          </Button>
-        )}
-      </div>
-    );
+  if (!boardId) {
+    return <BoardSelector />;
   }
 
   const getColumnTasks = (columnId: string) => {
@@ -138,14 +84,6 @@ export function KanbanBoard() {
     );
   };
 
-  const handleCreateBoard = () => {
-    if (newTitle.trim()) {
-      createBoard(newTitle.trim());
-      setNewTitle("");
-      setIsCreating(false);
-    }
-  };
-
   const handleRenameBoard = () => {
     if (renameValue.trim() && boardId) {
       renameBoard(boardId, renameValue.trim());
@@ -156,134 +94,86 @@ export function KanbanBoard() {
   return (
     <div className="flex flex-col h-full">
       <div className="flex items-center gap-3 px-4 py-3 shrink-0">
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="gap-2 font-semibold text-lg">
-              {currentBoard?.title || "Select Board"}
-              <ChevronDown className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="start" className="w-56">
-            {boards.map((board) => (
-              <DropdownMenuItem
-                key={board.id}
-                onClick={() => selectBoard(board.id)}
-                className={cn(
-                  "cursor-pointer",
-                  board.id === boardId && "font-medium",
-                )}
-              >
-                {board.title}
-              </DropdownMenuItem>
-            ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8"
+          onClick={() => deselectBoard()}
+        >
+          <ArrowLeft className="h-4 w-4" />
+        </Button>
 
-        {boardId && (
-          <>
-            {isRenaming ? (
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  handleRenameBoard();
-                }}
-                className="flex gap-1"
-              >
-                <input
-                  autoFocus
-                  type="text"
-                  value={renameValue}
-                  onChange={(e) => setRenameValue(e.target.value)}
-                  onBlur={() => setIsRenaming(false)}
-                  className="px-2 py-1 text-sm border rounded-md bg-background outline-none focus:ring-1 focus:ring-ring"
-                />
-              </form>
-            ) : (
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8"
-                onClick={() => {
-                  setRenameValue(currentBoard?.title || "");
-                  setIsRenaming(true);
-                }}
-              >
-                <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
-              </Button>
-            )}
+        <span className="font-semibold text-lg truncate">
+          {currentBoard?.title}
+        </span>
 
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8"
-              onClick={() => {
-                if (confirm("Delete this board and all its columns?")) {
-                  removeBoard(boardId);
-                }
-              }}
-            >
-              <Trash2 className="h-3.5 w-3.5 text-muted-foreground" />
-            </Button>
-          </>
-        )}
-
-        {isCreating ? (
+        {isRenaming ? (
           <form
             onSubmit={(e) => {
               e.preventDefault();
-              handleCreateBoard();
+              handleRenameBoard();
             }}
-            className="flex gap-1 ml-2"
+            className="flex gap-1"
           >
             <input
               autoFocus
               type="text"
-              value={newTitle}
-              onChange={(e) => setNewTitle(e.target.value)}
-              placeholder="Board name..."
+              value={renameValue}
+              onChange={(e) => setRenameValue(e.target.value)}
+              onBlur={() => setIsRenaming(false)}
               className="px-2 py-1 text-sm border rounded-md bg-background outline-none focus:ring-1 focus:ring-ring"
             />
-            <Button type="submit" size="sm" variant="ghost">
-              Create
-            </Button>
           </form>
         ) : (
           <Button
             variant="ghost"
-            size="sm"
-            onClick={() => setIsCreating(true)}
-            className="ml-2"
+            size="icon"
+            className="h-8 w-8"
+            onClick={() => {
+              setRenameValue(currentBoard?.title || "");
+              setIsRenaming(true);
+            }}
           >
-            <Plus className="h-4 w-4 mr-1" />
-            New Board
+            <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
           </Button>
         )}
+
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8"
+          onClick={() => {
+            if (confirm("Delete this board and all its columns?")) {
+              removeBoard(boardId);
+            }
+          }}
+        >
+          <Trash2 className="h-3.5 w-3.5 text-muted-foreground" />
+        </Button>
       </div>
 
-      {boardId && (
-        <DragDropContext onDragEnd={handleDragEnd}>
-          <Droppable droppableId="board" direction="horizontal" type="COLUMN">
-            {(provided) => (
-              <div
-                ref={provided.innerRef}
-                {...provided.droppableProps}
-                className="flex gap-4 p-4 overflow-x-auto flex-1"
-              >
-                {columns.map((col, index) => (
-                  <KanbanColumn
-                    key={col.id}
-                    column={col}
-                    tasks={getColumnTasks(col.id!)}
-                    index={index}
-                  />
-                ))}
-                {provided.placeholder}
-                <KanbanColumnForm />
-              </div>
-            )}
-          </Droppable>
-        </DragDropContext>
-      )}
+      <DragDropContext onDragEnd={handleDragEnd}>
+        <Droppable droppableId="board" direction="horizontal" type="COLUMN">
+          {(provided) => (
+            <div
+              ref={provided.innerRef}
+              {...provided.droppableProps}
+              className="flex gap-4 p-4 overflow-x-auto flex-1"
+            >
+              {columns.map((col, index) => (
+                <KanbanColumn
+                  key={col.id}
+                  column={col}
+                  tasks={getColumnTasks(col.id!)}
+                  index={index}
+                />
+              ))}
+              {provided.placeholder}
+              <KanbanColumnForm />
+            </div>
+          )}
+        </Droppable>
+      </DragDropContext>
     </div>
   );
 }

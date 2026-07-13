@@ -30,6 +30,7 @@ type KanbanState = {
   createBoard: (title: string) => Promise<void>;
   renameBoard: (id: string, title: string) => Promise<void>;
   removeBoard: (id: string) => Promise<void>;
+  deselectBoard: () => void;
 
   createColumn: (title: string) => Promise<void>;
   updateColumn: (id: string, title: string) => Promise<void>;
@@ -57,10 +58,6 @@ export const useKanbanStore = create<KanbanState>((set, get) => ({
       const boards = await FetchBoards();
       console.log("[Kanban] boards loaded:", boards);
       set({ boards, loaded: true });
-
-      if (boards.length > 0 && !get().boardId && boards[0].id) {
-        await get().selectBoard(boards[0].id);
-      }
     } catch (error) {
       console.error("Error fetching boards", error);
       set({ loaded: true });
@@ -143,11 +140,6 @@ export const useKanbanStore = create<KanbanState>((set, get) => ({
     try {
       await DeleteBoard(id);
       toast.success("Board deleted");
-
-      const remaining = get().boards;
-      if (remaining.length > 0 && boardId === id) {
-        await get().selectBoard(remaining[0].id);
-      }
     } catch (error) {
       set((state) => ({
         boards: [...state.boards, board].sort(
@@ -159,6 +151,10 @@ export const useKanbanStore = create<KanbanState>((set, get) => ({
       toast.error("Error deleting board");
       console.error("Error deleting board", error);
     }
+  },
+
+  deselectBoard: () => {
+    set({ boardId: null, columns: [] });
   },
 
   createColumn: async (title) => {
