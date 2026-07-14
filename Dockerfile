@@ -28,4 +28,4 @@ COPY --from=builder /app/dist ./dist
 COPY --from=deps /app/node_modules ./node_modules
 COPY package.json bun.lock* ./
 EXPOSE 7272
-CMD ["bun", "dist/server/entry.mjs"]
+CMD ["bun", "./dist/server/entry.mjs"]
