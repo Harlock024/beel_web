@@ -17,6 +17,7 @@ type Store = {
 
   // Acciones
   setSelectedList: (id: string) => void;
+  clearSelectedList: () => void;
   fetchLists: () => void;
   createList: (title: string, color: string) => void;
   updateList: (updatedList: Partial<List>) => void;
@@ -37,6 +38,9 @@ export const useListStore = create<Store>()(
           selectedTitleList:
             get().lists.find((list) => list.id === id)?.title || null,
         });
+      },
+      clearSelectedList: () => {
+        set({ selectedListId: null, selectedTitleList: null });
       },
       fetchLists: async () => {
         const listsResponse = await FetchLists();

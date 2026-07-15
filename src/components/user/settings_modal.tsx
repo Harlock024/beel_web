@@ -1,15 +1,11 @@
 import { User } from "@/types/user";
-import { Bell, Palette, Settings, Shield, UserIcon, X } from "lucide-react";
-import { use, useEffect, useRef, useState } from "react";
+import { Bell, Settings, Shield, UserIcon, X } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useSettingsStore } from "@/stores/useSettingsStore";
 import { useAuthStore } from "@/stores/useAuthStore";
+import toast from "react-hot-toast";
 
-interface SettingsModalProps {
-  onComplete: () => void;
-  isOpen: boolean;
-  currentUser: User;
-}
 type SettingSection = "general" | "account" | "security" | "notifications";
 
 export function SettingsModal() {
@@ -78,7 +74,7 @@ export function SettingsModal() {
           <div className="flex-1 overflow-y-auto p-6">
             <SettingContent activeSection={activeSection} user={user} />
           </div>
-          <SettingFooter />
+          <SettingFooter onSave={onComplete} />
         </div>
       </div>
     </section>
@@ -87,24 +83,24 @@ export function SettingsModal() {
 
 function SettingHeader({ activeSection }: { activeSection: SettingSection }) {
   const sectionTitles: Record<SettingSection, string> = {
-    general: "Configuración General",
+    general: "General Settings",
     account: "Cuenta",
     security: "Seguridad",
     notifications: "Notificaciones",
   };
 
   const sectionSubtitles: Record<SettingSection, string> = {
-    general: "Ajusta las preferencias generales de la aplicación.",
-    account: "Gestiona la información de tu cuenta.",
-    security: "Configura la seguridad de tu cuenta.",
-    notifications: "Personaliza tus notificaciones.",
+    general: "Adjust the general settings of the application.",
+    account: "Manage your account information.",
+    security: "Configure your account security.",
+    notifications: "Customize your notifications.",
   };
 
   return (
     <header className="flex items-center justify-between mb-4 border-b pb-2">
       <div>
         <h1 className="text-2xl font-bold">{sectionTitles[activeSection]}</h1>
-        <p className="text-gray-500 text-sm">{sectionSubtitles[activeSection]}</p>
+        <p className="text-muted-foreground text-sm">{sectionSubtitles[activeSection]}</p>
       </div>
       {/* Botón de guardar eliminado del header */}
     </header>
@@ -127,13 +123,13 @@ function SettingSidebar({
   ];
 
   return (
-    <aside className="w-32 min-w-[175px] h-auto rounded-lg mr-6 bg-gray-50 flex-shrink-0">
-      <div className="flex justify-start p-3  border-b border-gray-200">
+    <aside className="w-32 min-w-[175px] h-auto rounded-lg mr-6 bg-muted flex-shrink-0">
+      <div className="flex justify-start p-3  border-b border-border">
         <button
-          className="p-1.5 rounded-full hover:bg-gray-200 transition-all duration-200 group"
+          className="p-1.5 rounded-full hover:bg-accent transition-all duration-200 group"
           onClick={onComplete}
         >
-          <X className="h-4 w-4 text-gray-500 group-hover:text-gray-700 transition-colors" />
+          <X className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors" />
         </button>
       </div>
 
@@ -154,15 +150,15 @@ function SettingSidebar({
                   transition-colors duration-200 ease-out min-h-10
                   ${
                     isActive
-                      ? "bg-gray-200 text-black"
-                      : "text-gray-700 hover:bg-gray-200"
+                      ? "bg-accent text-accent-foreground"
+                      : "text-muted-foreground hover:bg-accent"
                   }
                 `}
               >
                 <Icon
                   className={`
                                  size-3 shrink-0 transition-colors duration-200
-                                 ${isActive ? "text-black" : "text-gray-500 hover:text-gray-700"}
+                                 ${isActive ? "text-accent-foreground" : "text-muted-foreground hover:text-foreground"}
                                `}
                 />
                 <span className="text-sm font-medium whitespace-nowrap">
@@ -198,7 +194,7 @@ export function SettingContent({
   }
 }
 function GeneralSettings() {
-  const [theme, setTheme] = useState("light");
+  const { isDarkMode, toggleDarkMode } = useSettingsStore();
   const [language, setLanguage] = useState("es");
   const [dateFormat, setDateFormat] = useState("DD/MM/YYYY");
 
@@ -209,35 +205,39 @@ function GeneralSettings() {
 
       {/* Cambiar tema */}
       <div className="mb-4">
-        <label className="block font-medium mb-1">Tema</label>
+        <label className="block font-medium mb-1">Theme</label>
         <select
-          className="border rounded px-2 py-1"
-          value={theme}
-          onChange={(e) => setTheme(e.target.value)}
+          className="border rounded px-2 py-1 bg-background text-foreground"
+          value={isDarkMode ? "dark" : "light"}
+          onChange={(e) => {
+            if ((e.target.value === "dark") !== isDarkMode) {
+              toggleDarkMode();
+            }
+          }}
         >
-          <option value="light">Claro</option>
-          <option value="dark">Oscuro</option>
+          <option value="light">Light</option>
+          <option value="dark">Dark</option>
         </select>
       </div>
 
       {/* Cambiar idioma */}
       <div className="mb-4">
-        <label className="block font-medium mb-1">Idioma</label>
+        <label className="block font-medium mb-1">Language</label>
         <select
-          className="border rounded px-2 py-1"
+          className="border rounded px-2 py-1 bg-background text-foreground"
           value={language}
           onChange={(e) => setLanguage(e.target.value)}
         >
-          <option value="es">Español</option>
-          <option value="en">Inglés</option>
+          <option value="es">Spanish</option>
+          <option value="en">English</option>
         </select>
       </div>
 
       {/* Cambiar formato de fecha */}
       <div className="mb-4">
-        <label className="block font-medium mb-1">Formato de fecha</label>
+        <label className="block font-medium mb-1">Date format</label>
         <select
-          className="border rounded px-2 py-1"
+          className="border rounded px-2 py-1 bg-background text-foreground"
           value={dateFormat}
           onChange={(e) => setDateFormat(e.target.value)}
         >
@@ -266,26 +266,26 @@ function AccountSettings({ user }: { user: User }) {
         </Avatar>
         <div>
           <p className="text-lg font-semibold">{user.username}</p>
-          <p className="text-gray-500">{user.email}</p>
+          <p className="text-muted-foreground">{user.email}</p>
         </div>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium mb-1">Nombre de usuario</label>
+          <label className="block text-sm font-medium mb-1">Username</label>
           <input
             type="text"
             value={username}
             onChange={e => setUsername(e.target.value)}
-            className="w-full border rounded px-3 py-2 bg-white text-gray-700"
+            className="w-full border rounded px-3 py-2 bg-background text-foreground"
           />
         </div>
         <div>
-          <label className="block text-sm font-medium mb-1">Correo electrónico</label>
+          <label className="block text-sm font-medium mb-1">Email</label>
           <input
             type="email"
             value={email}
             onChange={e => setEmail(e.target.value)}
-            className="w-full border rounded px-3 py-2 bg-white text-gray-700"
+            className="w-full border rounded px-3 py-2 bg-background text-foreground"
           />
         </div>
       </div>
@@ -310,7 +310,7 @@ function NotificationSettings() {
 
   return (
     <div>
-      <h2 className="text-lg font-semibold mb-4">Notificaciones</h2>
+      <h2 className="text-lg font-semibold mb-4">Notifications</h2>
       <div className="flex flex-col gap-4">
         <label className="flex items-center gap-2">
           <input
@@ -319,7 +319,7 @@ function NotificationSettings() {
             onChange={() => setEmailNotif(!emailNotif)}
             className="accent-blue-600"
           />
-          Recibir notificaciones por correo electrónico
+          Receive email notifications
         </label>
         <label className="flex items-center gap-2">
           <input
@@ -328,22 +328,24 @@ function NotificationSettings() {
             onChange={() => setPushNotif(!pushNotif)}
             className="accent-blue-600"
           />
-          Recibir notificaciones push
+          Receive push notifications
         </label>
       </div>
     </div>
   );
 }
 
-export function SettingFooter() {
+export function SettingFooter({ onSave }: { onSave: () => void }) {
   return (
     <div className="w-full flex justify-end items-center gap-2 p-4 border-t">
       <button
-        className="bg-[#673ab7]  hover:bg-[#592E83] text-white px-4 py-1.5 rounded  transition"
-  
-        // onClick={handleSave} // Aquí puedes conectar la lógica de guardado
+        className="bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-1.5 rounded transition"
+        onClick={() => {
+          toast.success("Settings saved");
+          onSave();
+        }}
       >
-        Guardar cambios
+        Save changes
       </button>
     </div>
   );

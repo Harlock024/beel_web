@@ -1,5 +1,6 @@
 export type Subtask = {
   id: string;
   title: string;
-  done: boolean;
+  is_completed?: boolean;
+  sub_tasks?: Subtask[];
 };

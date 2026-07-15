@@ -102,7 +102,7 @@ export function SignUpForm({
       </div>
       <div className="grid gap-6">
         {generalError && (
-          <div className="text-red-600 text-sm text-center">{generalError}</div>
+          <div className="text-destructive text-sm text-center">{generalError}</div>
         )}
         
         <div className="grid gap-3">
@@ -118,7 +118,7 @@ export function SignUpForm({
             aria-describedby={usernameError ? "username-error" : undefined}
           />
           {usernameError && (
-            <span id="username-error" className="text-xs text-red-600">{usernameError}</span>
+            <span id="username-error" className="text-xs text-destructive">{usernameError}</span>
           )}
         </div>
         
@@ -135,7 +135,7 @@ export function SignUpForm({
             aria-describedby={emailError ? "email-error" : undefined}
           />
           {emailError && (
-            <span id="email-error" className="text-xs text-red-600">{emailError}</span>
+            <span id="email-error" className="text-xs text-destructive">{emailError}</span>
           )}
         </div>
         
@@ -152,7 +152,7 @@ export function SignUpForm({
             autoComplete="new-password"
           />
           {passwordError && (
-            <span id="password-error" className="text-xs text-red-600">{passwordError}</span>
+            <span id="password-error" className="text-xs text-destructive">{passwordError}</span>
           )}
         </div>
         
@@ -169,7 +169,7 @@ export function SignUpForm({
             autoComplete="new-password"
           />
           {confirmPasswordError && (
-            <span id="confirm-password-error" className="text-xs text-red-600">{confirmPasswordError}</span>
+            <span id="confirm-password-error" className="text-xs text-destructive">{confirmPasswordError}</span>
           )}
         </div>
         

@@ -12,6 +12,6 @@ if (!id) {
 
 <Layout>
     <TitleListUpdater client:only="react" />
-    <TaskForm client:load />
+    <TaskForm list_id={id} client:load />
     <TaskList list_id={id} client:load />
 </Layout>

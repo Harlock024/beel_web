@@ -32,8 +32,8 @@ export function ListCard({ list }: { list: List }) {
         className={cn(
           "flex items-center gap-3 px-3 py-1 rounded-md w-full justify-start transition-colors",
           isSelected 
-            ? "bg-[#ececec] text-gray-900" 
-            : "text-gray-700 hover:bg-[#ececec]"
+            ? "bg-accent text-accent-foreground" 
+            : "text-muted-foreground hover:bg-accent"
         )}
         title={list.title}
       >
@@ -58,7 +58,7 @@ export function ListCard({ list }: { list: List }) {
                 className="h-6 w-6 p-0" 
                 onClick={(e) => e.stopPropagation()}
               >
-                <Ellipsis className="h-4 w-4 cursor-pointer  hover:text-gray-950" />
+                <Ellipsis className="h-4 w-4 cursor-pointer  hover:text-foreground" />
                
               </Button>
             </DropdownMenuTrigger>
@@ -82,7 +82,7 @@ export function ListCard({ list }: { list: List }) {
                   e.stopPropagation();
                   handleDeleteList();
                 }}
-                className="text-red-500 focus:text-red-500 focus:bg-red-50 flex items-center gap-2"
+                className="text-destructive focus:text-destructive focus:bg-destructive/10 flex items-center gap-2"
               >
                 <Trash className="h-4 w-4" />
                 <span>Delete</span>

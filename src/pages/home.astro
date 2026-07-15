@@ -1,7 +1,11 @@
 ---
 import Layout from "../layouts/Layout.astro";
+import { Dashboard } from "@/components/home/dashboard";
+import { Protected } from "@/components/Protected";
 ---
 
 <Layout title="Dashboard">
-    <h1 class="text-3xl">Beel app</h1>
+    <Protected client:load>
+        <Dashboard client:load />
+    </Protected>
 </Layout>

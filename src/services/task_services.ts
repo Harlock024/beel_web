@@ -30,18 +30,37 @@ export async function FetchTasksByFilter(
   }
 }
 
+export async function FetchTaskCount(): Promise<{ count: number }> {
+  try {
+    const response = await api_client.get<{ count: number }>("/api/tasks/count");
+    return response.data;
+  } catch (error) {
+    handleAxiosError(error, "FetchTaskCount");
+  }
+}
+
 export async function CreateTask({
   title,
   list_id,
+  due_date,
 }: {
   title: string;
   list_id?: string;
+  due_date?: string;
 }): Promise<Task> {
   try {
-    const response = await api_client.post(`/api/lists/${list_id}/tasks`, {
+    if (list_id) {
+      const response = await api_client.post(`/api/lists/${list_id}/tasks`, {
+        title,
+        due_date,
+      });
+      return response.data.task;
+    }
+    const response = await api_client.post("/api/tasks", {
       title,
+      due_date,
     });
-    return response.data.task;
+    return response.data.task || response.data;
   } catch (error) {
     handleAxiosError(error, "CreateTask");
   }
@@ -65,5 +84,26 @@ export async function DeleteTask(taskId: string): Promise<boolean> {
     return response.status === 204;
   } catch (error) {
     handleAxiosError(error, "DeleteTask");
+  }
+}
+
+export async function CreateKanbanTask({
+  title,
+  column_id,
+  list_id,
+}: {
+  title: string;
+  column_id: string;
+  list_id?: string;
+}): Promise<Task> {
+  try {
+    const response = await api_client.post("/api/tasks", {
+      title,
+      column_id,
+      list_id,
+    });
+    return response.data.task || response.data;
+  } catch (error) {
+    handleAxiosError(error, "CreateKanbanTask");
   }
 }

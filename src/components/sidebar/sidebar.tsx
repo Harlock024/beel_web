@@ -1,10 +1,10 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { SidebarList } from "./sidebar_list";
 import { useAuthStore } from "@/stores/useAuthStore";
-import { Home, PanelRight } from "lucide-react";
+import { PanelRight } from "lucide-react";
 import { useSidebarStore } from "@/stores/sidebarStore";
-import { SidebarActions } from "./sidebar_actions";
 import { SidebarTask } from "./sidebar_task";
+import { SidebarSearch } from "./sidebar_search";
 import { AvatarAction } from "../user/avatar_action";
 import { cn } from "@/lib/utils";
 
@@ -25,13 +25,14 @@ export default function Sidebar() {
   return (
     <>
       <aside
-        className={`transition-all duration-300 ease-in-out border-r bg-[#f8f8f6] fixed md:static top-0 left-0 h-screen z-40
+        className={`transition-all duration-300 ease-in-out border-r bg-sidebar fixed md:static top-0 left-0 h-screen z-40
         ${isOpen ? "w-[256px]" : "w-0 overflow-hidden"}`}
       >
-        <div className="h-full w-full px-2 py-1 gap-4 flex flex-col "> 
+        <div className="h-full w-full px-2 py-1 gap-4 flex flex-col overflow-hidden min-w-0"> 
           <SidebarHeader  />
           
           <SidebarTask />
+          <SidebarSearch />
           <SidebarList />
 
         </div>
@@ -43,7 +44,7 @@ export default function Sidebar() {
 function SidebarHeader({className}:{className?:string}) {
   return (
     <header className={cn(className,"flex flex-col w-full items-between")}>
-      <div className="flex  hover:bg-[#ececec]  rounded-md   justify-between   w-full">
+      <div className="flex  hover:bg-accent  rounded-md   justify-between   w-full">
         <AvatarAction/>
         <button onClick={() => useSidebarStore.getState().toggle()}>
           <PanelRight className="w-5  h-5" />

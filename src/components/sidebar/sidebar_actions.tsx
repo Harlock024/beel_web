@@ -1,7 +1,6 @@
 import { Plus, Settings2 } from "lucide-react";
 import { useState } from "react";
 import { ListForm } from "../list/list_form";
-import { SettingsModal } from "../user/settings_modal";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -9,24 +8,17 @@ import {
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
 import { useAuthStore } from "@/stores/useAuthStore";
+import { useSettingsStore } from "@/stores/useSettingsStore";
 
 export function SidebarActions() {
   const [newList, setIsNewList] = useState(false);
-  const [isSettingOpen, setSettingOpen] = useState(false);
-  const currentUser = useAuthStore((state) => state.user);
   const logout = useAuthStore((state) => state.logout);
 
   function HandletoggleNewList() {
     setIsNewList(!newList);
   }
-  function HandlertoggleSetting() {
-    setSettingOpen(!isSettingOpen);
-  }
   function HandlerOnClomplete() {
     setIsNewList(false);
-  }
-  function HandlerSettingOncomplete() {
-    setSettingOpen(false);
   }
   return (
     <div>
@@ -36,7 +28,7 @@ export function SidebarActions() {
             onClick={() => {
               HandletoggleNewList();
             }}
-            className="flex items-center cursor-pointer text-sm text-gray-700 hover:text-gray-900"
+            className="flex items-center cursor-pointer text-sm text-foreground/80 hover:text-foreground"
           >
             <Plus className="w-4 h-4 mr-2 inline-block" />
             New List
@@ -50,7 +42,7 @@ export function SidebarActions() {
             <DropdownMenuContent>
               <DropdownMenuItem>
                 <button
-                  onClick={HandlertoggleSetting}
+                  onClick={() => useSettingsStore.getState().setIsOpen(true)}
                   className="flex items-center gap-2"
                 >
                   Settings
@@ -70,13 +62,6 @@ export function SidebarActions() {
         </div>
       </section>
       {newList && <ListForm isOpen={newList} onComplete={HandlerOnClomplete} />}
-      {isSettingOpen && currentUser && (
-        <SettingsModal
-          isOpen={isSettingOpen}
-          onComplete={HandlerSettingOncomplete}
-          currentUser={currentUser}
-        />
-      )}
     </div>
   );
 }

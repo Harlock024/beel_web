@@ -25,16 +25,16 @@ export async function CreateList(title: string, color: string): Promise<List> {
 
 export async function UpdateList(
   list: Partial<List>,
-): Promise<ListsResponseProp> {
+): Promise<List> {
   try {
-    const response = await api_client.put<ListsResponseProp>(
+    const response = await api_client.put<{ list: List }>(
       `/api/lists/${list.id}`,
       {
         title: list.title,
         color: list.color,
       },
     );
-    return response.data;
+    return response.data.list;
   } catch (error) {
     handleAxiosError(error, "UpdateList");
   }

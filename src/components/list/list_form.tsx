@@ -57,13 +57,13 @@ export function ListForm({ list, onComplete, isOpen = true }: ListFormProps) {
   const validateTitle = useCallback(
     (title: string): string | null => {
       if (!title.trim()) {
-        return "El nombre de la lista es requerido";
+        return "List name is required";
       }
       if (title.trim().length < 2) {
-        return "El nombre debe tener al menos 2 caracteres";
+        return "Name must be at least 2 characters";
       }
       if (title.trim().length > 50) {
-        return "El nombre no puede exceder 50 caracteres";
+        return "Name cannot exceed 50 characters";
       }
 
       const existingList = lists.find(
@@ -72,7 +72,7 @@ export function ListForm({ list, onComplete, isOpen = true }: ListFormProps) {
           list.id !== list.id,
       );
       if (existingList) {
-        return "Ya existe una lista con ese nombre";
+        return "A list with that name already exists";
       }
 
       return null;
@@ -111,7 +111,7 @@ export function ListForm({ list, onComplete, isOpen = true }: ListFormProps) {
         onComplete();
       }
     } catch (err) {
-      setError("Error al guardar la lista. Inténtalo de nuevo.");
+      setError("Error saving list. Please try again.");
       setIsSubmitting(false);
     }
   };
@@ -149,10 +149,10 @@ export function ListForm({ list, onComplete, isOpen = true }: ListFormProps) {
       onKeyDown={handleKeyDown}
       tabIndex={-1}
     >
-      <div className="w-full max-w-md bg-white rounded-lg shadow-xl border animate-in zoom-in-95 duration-200">
+      <div className="w-full max-w-md bg-card rounded-lg shadow-xl border animate-in zoom-in-95 duration-200">
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b">
-          <h2 className="text-lg font-semibold text-gray-900">
+          <h2 className="text-lg font-semibold text-foreground">
             {list ? "Editar lista" : "Nueva lista"}
           </h2>
           <Button
@@ -174,19 +174,19 @@ export function ListForm({ list, onComplete, isOpen = true }: ListFormProps) {
             <div className="space-y-2">
               <label
                 htmlFor="list-name"
-                className="text-sm font-medium text-gray-700"
+                className="text-sm font-medium text-foreground"
               >
-                Nombre de la lista
+                List name
               </label>
               <div className="relative">
                 <div className="absolute left-3 top-1/2 transform -translate-y-1/2">
-                  <Plus className="text-gray-400 h-4 w-4" />
+                  <Plus className="text-muted-foreground h-4 w-4" />
                 </div>
                 <input
                   id="list-name"
-                  className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md text-sm placeholder:text-gray-400 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                  className="w-full pl-10 pr-3 py-2 border border-border rounded-md text-sm placeholder:text-muted-foreground text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring transition-colors"
                   type="text"
-                  placeholder={`${list ? `${list.title}` : "Nombre de la lista"}`}
+                  placeholder={`${list ? `${list.title}` : "List name"}`}
                   ref={nameRef}
                   autoComplete="off"
                   maxLength={50}
@@ -199,7 +199,7 @@ export function ListForm({ list, onComplete, isOpen = true }: ListFormProps) {
               {error && (
                 <div
                   id="list-error"
-                  className="text-xs text-red-600 animate-in slide-in-from-top-1 duration-200"
+                  className="text-xs text-destructive animate-in slide-in-from-top-1 duration-200"
                   role="alert"
                 >
                   {error}
@@ -209,7 +209,7 @@ export function ListForm({ list, onComplete, isOpen = true }: ListFormProps) {
 
             {/* Selector de color */}
             <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-700">
+              <label className="text-sm font-medium text-foreground">
                 Color de la lista
               </label>
 
@@ -222,21 +222,21 @@ export function ListForm({ list, onComplete, isOpen = true }: ListFormProps) {
                     className={cn(
                       "w-8 h-8 rounded-md border-2 hover:scale-105 transition-all focus:outline-none focus:ring-2 focus:ring-blue-500",
                       color === defaultColor
-                        ? "border-gray-600 ring-2 ring-gray-300"
-                        : "border-gray-200 hover:border-gray-300",
+                        ? "border-foreground/40 ring-2 ring-border"
+                        : "border-border hover:border-border",
                     )}
                     style={{ backgroundColor: defaultColor }}
                     onClick={() => setColor(defaultColor)}
                     disabled={isSubmitting}
-                    aria-label={`Seleccionar color ${defaultColor}`}
+                    aria-label={`Select color ${defaultColor}`}
                   />
                 ))}
               </div>
 
               {/* Selector de color personalizado */}
               <div className="flex items-center gap-2">
-                <span className="text-xs text-gray-500">
-                  Color personalizado:
+                <span className="text-xs text-muted-foreground">
+                  Custom color:
                 </span>
                 <DropdownMenu
                   open={isColorPickerOpen}
@@ -246,7 +246,7 @@ export function ListForm({ list, onComplete, isOpen = true }: ListFormProps) {
                     <button
                       type="button"
                       className={cn(
-                        "w-8 h-8 rounded-md border-2 border-gray-300 hover:scale-105 transition-all focus:outline-none focus:ring-2 focus:ring-blue-500 relative",
+                        "w-8 h-8 rounded-md border-2 border-border hover:scale-105 transition-all focus:outline-none focus:ring-2 focus:ring-ring relative",
                         isSubmitting && "opacity-50 cursor-not-allowed",
                       )}
                       style={{ backgroundColor: color }}
@@ -257,11 +257,11 @@ export function ListForm({ list, onComplete, isOpen = true }: ListFormProps) {
                     </button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent
-                    className="border-gray-200 p-3"
+                    className="border-border p-3"
                     align="start"
                   >
                     <HexColorPicker color={color} onChange={setColor} />
-                    <div className="text-xs text-center text-gray-500 font-medium pt-2 border-t mt-2">
+                    <div className="text-xs text-center text-muted-foreground font-medium pt-2 border-t mt-2">
                       {color.toUpperCase()}
                     </div>
                   </DropdownMenuContent>
@@ -269,10 +269,10 @@ export function ListForm({ list, onComplete, isOpen = true }: ListFormProps) {
               </div>
 
               {/* Preview del color seleccionado */}
-              <div className="flex items-center gap-2 text-xs text-gray-500">
-                <span>Vista previa:</span>
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <span>Preview:</span>
                 <div
-                  className="w-4 h-4 rounded border border-gray-200"
+                  className="w-4 h-4 rounded border border-border"
                   style={{ backgroundColor: list ? list.color : color }}
                 />
                 <span className="font-mono">{color.toUpperCase()}</span>
@@ -285,12 +285,12 @@ export function ListForm({ list, onComplete, isOpen = true }: ListFormProps) {
                 {isSubmitting ? (
                   <div className="flex items-center gap-2">
                     <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    Guardando...
+                    Saving...
                   </div>
                 ) : (
                   <div className="flex items-center gap-2">
                     <Check className="w-4 h-4" />
-                    {list ? "Guardar cambios" : "Crear lista"}
+                    {list ? "Save changes" : "Create list"}
                   </div>
                 )}
               </Button>
@@ -301,7 +301,7 @@ export function ListForm({ list, onComplete, isOpen = true }: ListFormProps) {
                 onClick={handleCancel}
                 disabled={isSubmitting}
               >
-                Cancelar
+                Cancel
               </Button>
             </div>
           </form>
