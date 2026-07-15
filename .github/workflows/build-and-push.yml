@@ -3,6 +3,8 @@ name: Build and Push Frontend
 
 on:
   push:
+    tags:
+    - "v*"
     branches: [master]
 
 jobs:
