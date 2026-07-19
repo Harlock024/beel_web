@@ -12,7 +12,7 @@ export async function login(
   password: string,
 ): Promise<LoginResponse> {
   try {
-    const response = await fetch(`${API_URL}/api/auth/login`, {
+    const response = await fetch(`${API_URL}/auth/login`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -31,7 +31,7 @@ export async function login(
 
 export async function refresh() {
   try {
-    const response = await fetch(`${API_URL}/api/auth/refresh`, {
+    const response = await fetch(`${API_URL}/auth/refresh`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -51,7 +51,7 @@ export async function refresh() {
 
 export async function logout() {
   try {
-    const response = await fetch(`${API_URL}/api/auth/logout`, {
+    const response = await fetch(`${API_URL}/auth/logout`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -75,7 +75,7 @@ export async function register(
   password: string,
 ): Promise<LoginResponse> {
   try {
-    const response = await fetch(`${API_URL}/api/auth/register`, {
+    const response = await fetch(`${API_URL}/auth/register`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

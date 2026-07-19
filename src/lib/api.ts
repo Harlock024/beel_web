@@ -58,7 +58,7 @@ api_client.interceptors.response.use(
         if (!refreshPromise) {
           refreshPromise = axios
             .post<LoginResponse>(
-              `${API_URL}/api/auth/refresh`,
+              `${API_URL}/auth/refresh`,
               { refresh_token: refreshToken },
               { headers: { "Content-Type": "application/json" } }
             )
