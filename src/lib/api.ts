@@ -50,8 +50,7 @@ api_client.interceptors.response.use(
       const { refreshToken } = useAuthStore.getState();
 
       if (!refreshToken) {
-        useAuthStore.getState().logout();
-        window.location.href = "/auth";
+        useAuthStore.getState().clearAuth();
         return Promise.reject(error);
       }
       try {
@@ -89,8 +88,7 @@ api_client.interceptors.response.use(
         return api_client(originalRequest);
       } catch (refreshError) {
         console.error("Refresh token failed:", refreshError);
-        useAuthStore.getState().logout();
-        window.location.href = "/auth";
+        useAuthStore.getState().clearAuth();
         return Promise.reject(refreshError);
       }
     }

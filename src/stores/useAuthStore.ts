@@ -1,6 +1,5 @@
 import { login, register } from "@/services/auth_services";
 import { User } from "@/types/user";
-import { AstroCookies } from "astro";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
@@ -16,7 +15,14 @@ type AuthState = {
     password: string,
   ) => Promise<void>;
   login: (email: string, password: string) => Promise<void>;
+  clearAuth: () => void;
   logout: () => void;
+};
+
+const clearPersistedAuth = () => {
+  if (typeof window !== "undefined") {
+    localStorage.removeItem("auth-storage");
+  }
 };
 
 export const useAuthStore = create<AuthState>()(
@@ -41,16 +47,16 @@ export const useAuthStore = create<AuthState>()(
           });
         } catch (error) {
           console.error("Registration failed:", error);
+          set({ isLoading: false });
+          throw error;
         }
       },
       login: async (email: string, password: string) => {
-        console.log("login in process");
         try {
           const { user, access_token, refresh_token } = await login(
             email,
             password,
           );
-          console.log("User logged in:", user);
           set({
             isLoading: false,
             user,
@@ -59,16 +65,26 @@ export const useAuthStore = create<AuthState>()(
           });
         } catch (error) {
           console.error("Login failed:", error);
+          set({ isLoading: false });
+          throw error;
         }
       },
+      clearAuth: () => {
+        set({ user: null, accessToken: null, refreshToken: null, isLoading: false });
+        clearPersistedAuth();
+      },
       logout: () => {
-        set({ user: null, accessToken: null, refreshToken: null });
-        localStorage.clear();
-        window.location.href = "/";
+        get().clearAuth();
+        if (typeof window !== "undefined") {
+          window.location.href = "/";
+        }
       },
     }),
     {
       name: "auth-storage",
+      onRehydrateStorage: () => (state) => {
+        state?.setLoading(false);
+      },
     },
   ),
 );
